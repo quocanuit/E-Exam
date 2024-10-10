@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">E-Exam</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="student_class">Hello student class fragment</string>
+    <string name="student_exam">Hello student exam fragment</string>
+    <string name="student_score">Hello student score fragment</string>
+    <string name="user_frm">Hello user fragment</string>
 </resources>
