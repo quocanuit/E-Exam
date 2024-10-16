@@ -8,5 +8,5 @@
     <string name="user_frm">Hello user fragment</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="teacher_class">Hello teacher class fragment</string>
-    <string name="teacher_exam">Hello teacher exam fragment</string>
+    <string name="new_exam">Tạo bài tập</string>
 </resources>

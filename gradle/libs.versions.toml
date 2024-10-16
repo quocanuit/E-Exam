@@ -8,9 +8,11 @@ material = "1.12.0"
 activity = "1.9.2"
 constraintlayout = "2.1.4"
 retrofit2 = "2.9.0"
+retrofitGsonConverter = "2.9.0"
 
 [libraries]
 retrofit2 = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit2" }
+retrofit2-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofitGsonConverter" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
