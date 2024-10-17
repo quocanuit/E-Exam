@@ -49,7 +49,7 @@ public class TeacherExamFragment extends Fragment {
 
     private void setupApiService() {
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://670e5e693e71518616543950.mockapi.io/api/v1/")
+                .baseUrl("https://0d6ab1bc-40e9-45c1-8733-d29ffdab156a.mock.pstmn.io")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         apiService = retrofit.create(ApiService.class);
@@ -75,7 +75,7 @@ public class TeacherExamFragment extends Fragment {
     }
 
     private void loadExams() {
-        Call<List<TeacherExamList>> call = apiService.getExamList();
+        Call<List<TeacherExamList>> call = apiService.getTeacherExamList();
         call.enqueue(new Callback<List<TeacherExamList>>() {
             @Override
             public void onResponse(@NonNull Call<List<TeacherExamList>> call, @NonNull Response<List<TeacherExamList>> response) {

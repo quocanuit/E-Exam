@@ -19,7 +19,8 @@
             android:layout_height="wrap_content"
             android:src="@drawable/baseline_text_snippet_24"
             android:padding="@dimen/margin_base"
-            android:layout_gravity="center_vertical">
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@string/bai_tap">
         </ImageView>
 
         <LinearLayout
