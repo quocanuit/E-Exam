@@ -44,6 +44,6 @@ public class TeacherExamList {
 
     public String getFormattedDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        return "Created on: " + sdf.format(new Date(date * 1000));
+        return "Ngày tạo: " + sdf.format(new Date(date * 1000));
     }
 }

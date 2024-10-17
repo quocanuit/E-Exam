@@ -7,9 +7,32 @@
     android:gravity="center_horizontal"
     tools:context=".TeacherExamFragment">
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/new_exam"
+        android:layout_marginVertical="32dp"
+        android:layout_marginHorizontal="80dp">
+    </Button>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/bai_tap"
+        android:textSize="24sp"
+        android:gravity="start"
+        android:textStyle="bold"
+        android:layout_margin="@dimen/margin_basex2"
+        android:paddingStart="11dp"
+        android:paddingEnd="0dp">
+    </TextView>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:paddingLeft="@dimen/margin_base"
+        android:paddingRight="@dimen/margin_base"
+        android:layout_marginHorizontal="@dimen/activity_vertical_margin" />
 
 </LinearLayout>

@@ -9,4 +9,5 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="teacher_class">Hello teacher class fragment</string>
     <string name="new_exam">Tạo bài tập</string>
+    <string name="bai_tap">Bài tập</string>
 </resources>
