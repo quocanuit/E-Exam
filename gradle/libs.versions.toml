@@ -1,5 +1,5 @@
 [versions]
-agp = "8.6.0"
+agp = "8.7.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
@@ -7,8 +7,10 @@ appcompat = "1.7.0"
 material = "1.12.0"
 activity = "1.9.2"
 constraintlayout = "2.1.4"
+retrofit2 = "2.9.0"
 
 [libraries]
+retrofit2 = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit2" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
