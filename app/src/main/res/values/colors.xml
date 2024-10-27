@@ -10,4 +10,5 @@
     <color name="on_surface">#1D1B20</color>
     <color name="primary">#65558F</color>
     <color name="primary_fixed">#EADDFF</color>
+    <color name="purple_700">#65558F</color>
 </resources>
