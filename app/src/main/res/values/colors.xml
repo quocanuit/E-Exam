@@ -6,4 +6,8 @@
     <color name="surface_container">#F3EDF7</color>
     <color name="on_surface">#1D1B20</color>
     <color name="primary">#65558F</color>
+    <color name="purple_500">#9C27B0</color>
+    <!-- colors.xml -->
+    <color name="light_purple">#D8BFD8</color> <!-- màu tím nhạt -->
+
 </resources>
