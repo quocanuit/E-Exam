@@ -2,20 +2,16 @@ package com.example.e_exam;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.e_exam.databinding.ActivityStudentBinding;
+import com.example.e_exam.user.UserFragment;
 
 public class StudentActivity extends AppCompatActivity {
 
