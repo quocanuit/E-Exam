@@ -1,64 +1,111 @@
 package com.example.e_exam;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link TeacherExamFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.e_exam.adapter.TeacherExamListAdapter;
+import com.example.e_exam.model.TeacherExamList;
+import com.example.e_exam.network.ApiService;
+
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class TeacherExamFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public TeacherExamFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment TeacherExamFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static TeacherExamFragment newInstance(String param1, String param2) {
-        TeacherExamFragment fragment = new TeacherExamFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private RecyclerView recyclerView;
+    private TeacherExamListAdapter adapter;
+    private ApiService apiService;
+    private List<TeacherExamList> examList;
+    private int currentDisplayedItems = 0;
+    private static final int ITEMS_PER_PAGE = 20;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_teacher_exam, container, false);
+
+        recyclerView = view.findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter = new TeacherExamListAdapter();
+        recyclerView.setAdapter(adapter);
+
+        setupApiService();
+        setupScrollListener();
+        loadExams();
+
+        return view;
+    }
+
+    private void setupApiService() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://0d6ab1bc-40e9-45c1-8733-d29ffdab156a.mock.pstmn.io")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        apiService = retrofit.create(ApiService.class);
+    }
+
+    private void setupScrollListener() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                if (layoutManager == null) return;
+                int visibleItemCount = layoutManager.getChildCount();
+                int totalItemCount = layoutManager.getItemCount();
+                int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+
+                if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
+                        && firstVisibleItemPosition >= 0
+                        && totalItemCount < examList.size()) {
+                    loadMoreItems();
+                }
+            }
+        });
+    }
+
+    private void loadExams() {
+        Call<List<TeacherExamList>> call = apiService.getTeacherExamList();
+        call.enqueue(new Callback<List<TeacherExamList>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<TeacherExamList>> call, @NonNull Response<List<TeacherExamList>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    examList = response.body();
+                    loadMoreItems();
+                } else {
+                    showError("Unexpected response");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<TeacherExamList>> call, @NonNull Throwable t) {
+                showError("Error: " + t.getMessage());
+            }
+        });
+    }
+
+    private void loadMoreItems() {
+        if (examList != null && currentDisplayedItems < examList.size()) {
+            int endIndex = Math.min(currentDisplayedItems + ITEMS_PER_PAGE, examList.size());
+            List<TeacherExamList> newItems = examList.subList(currentDisplayedItems, endIndex);
+            adapter.addExams(newItems);
+            currentDisplayedItems = endIndex;
         }
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_teacher_exam, container, false);
+    private void showError(String message) {
+        if (getContext() != null) {
+            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        }
     }
 }
