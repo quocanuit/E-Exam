@@ -11,7 +11,7 @@
     <string name="new_exam">Tạo bài tập</string>
     <string name="bai_tap">Bài tập</string>
 <!--    -->
-    <string name="join_class">Tham gia lớp học</string>
+    <string name="all_classes">Tất cả lớp học</string>
 <!--    -->
     <string name="is_pending">Làm bài</string>
     <string name="is_done">Đã xong</string>
