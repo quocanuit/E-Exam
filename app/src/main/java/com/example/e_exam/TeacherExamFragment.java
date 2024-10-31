@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -13,20 +12,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.e_exam.adapter.TeacherExamListAdapter;
 import com.example.e_exam.model.TeacherExamList;
-import com.example.e_exam.network.ApiService;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class TeacherExamFragment extends Fragment {
     private RecyclerView recyclerView;
     private TeacherExamListAdapter adapter;
-    private ApiService apiService;
     private List<TeacherExamList> examList;
     private int currentDisplayedItems = 0;
     private static final int ITEMS_PER_PAGE = 20;
@@ -40,19 +32,11 @@ public class TeacherExamFragment extends Fragment {
         adapter = new TeacherExamListAdapter();
         recyclerView.setAdapter(adapter);
 
-        setupApiService();
         setupScrollListener();
-        loadExams();
+        loadMockData();
+        loadMoreItems();
 
         return view;
-    }
-
-    private void setupApiService() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://0d6ab1bc-40e9-45c1-8733-d29ffdab156a.mock.pstmn.io")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        apiService = retrofit.create(ApiService.class);
     }
 
     private void setupScrollListener() {
@@ -74,24 +58,26 @@ public class TeacherExamFragment extends Fragment {
         });
     }
 
-    private void loadExams() {
-        Call<List<TeacherExamList>> call = apiService.getTeacherExamList();
-        call.enqueue(new Callback<List<TeacherExamList>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<TeacherExamList>> call, @NonNull Response<List<TeacherExamList>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    examList = response.body();
-                    loadMoreItems();
-                } else {
-                    showError("Unexpected response");
-                }
-            }
+    private void loadMockData() {
+        examList = new ArrayList<>();
 
-            @Override
-            public void onFailure(@NonNull Call<List<TeacherExamList>> call, @NonNull Throwable t) {
-                showError("Error: " + t.getMessage());
-            }
-        });
+        // Hardcoded mock data
+        examList.add(new TeacherExamList("Nộp bài thực hành số 6", 1729006273L, false, "1"));
+        examList.add(new TeacherExamList("Nộp báo cáo đồ án", 1729006213L, true, "2"));
+        examList.add(new TeacherExamList("Nộp trễ tất cả bài thực hành", 1729006153L, false, "3"));
+        examList.add(new TeacherExamList("Nộp bài thực hành số 5", 1729130914L, false, "4"));
+        examList.add(new TeacherExamList("Nộp bài tập", 1729145627L, false, "5"));
+        examList.add(new TeacherExamList("Bài thực hành 2", 1729145567L, true, "6"));
+        examList.add(new TeacherExamList("Phát triển ứng dụng trên thiết bị di động", 1729145507L, true, "7"));
+        examList.add(new TeacherExamList("Hệ thống nhúng mạng không dây", 1729145447L, false, "8"));
+        examList.add(new TeacherExamList("Kiểm tra giữa kì", 1729145387L, false, "9"));
+        examList.add(new TeacherExamList("An toàn mạng máy tính", 1729145360L, false, "10"));
+        examList.add(new TeacherExamList("Đánh giá hiệu năng hệ thống mạng máy tính", 1729145300L, false, "11"));
+        examList.add(new TeacherExamList("Bài tập về nhà", 1729145240L, true, "12"));
+        examList.add(new TeacherExamList("Bài tập lớn", 1729145180L, false, "13"));
+        examList.add(new TeacherExamList("Bài tập khi rảnh", 1729145120L, true, "14"));
+        examList.add(new TeacherExamList("Bài tập khi bận", 1729150213L, false, "15"));
+        examList.add(new TeacherExamList("Nhập môn lập trình", 1729150153L, true, "16"));
     }
 
     private void loadMoreItems() {
@@ -100,12 +86,6 @@ public class TeacherExamFragment extends Fragment {
             List<TeacherExamList> newItems = examList.subList(currentDisplayedItems, endIndex);
             adapter.addExams(newItems);
             currentDisplayedItems = endIndex;
-        }
-    }
-
-    private void showError(String message) {
-        if (getContext() != null) {
-            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
         }
     }
 }
