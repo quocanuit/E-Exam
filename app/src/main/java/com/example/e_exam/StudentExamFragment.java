@@ -1,33 +1,24 @@
 package com.example.e_exam;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Toast;
-
 import com.example.e_exam.adapter.StudentExamListAdapter;
 import com.example.e_exam.model.StudentExamList;
-import com.example.e_exam.network.ApiService;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-
-public class StudentExamFragment extends Fragment {
+public class StudentExamFragment extends Fragment implements StudentExamListAdapter.OnExamClickListener {
     private RecyclerView recyclerView;
     private StudentExamListAdapter adapter;
-    private ApiService apiService;
     private List<StudentExamList> examList;
     private int currentDisplayedItems = 0;
     private static final int ITEMS_PER_PAGE = 20;
@@ -40,21 +31,29 @@ public class StudentExamFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new StudentExamListAdapter();
+        adapter.setOnExamClickListener(this);
         recyclerView.setAdapter(adapter);
 
-        setupApiService();
         setupScrollListener();
-        loadExams();
+        loadMockData();
+        loadMoreItems();
 
         return view;
     }
 
-    private void setupApiService() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://0d6ab1bc-40e9-45c1-8733-d29ffdab156a.mock.pstmn.io")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        apiService = retrofit.create(ApiService.class);
+    @Override
+    public void onExamClick(StudentExamList exam) {
+        ExamDetailFragment detailFragment = ExamDetailFragment.newInstance(
+                exam.getClassName(),
+                exam.getName(),
+                exam.getDueDate()
+        );
+
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.frame_layout, detailFragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     private void setupScrollListener() {
@@ -76,24 +75,20 @@ public class StudentExamFragment extends Fragment {
         });
     }
 
-    private void loadExams() {
-        Call<List<StudentExamList>> call = apiService.getStudentExamList();
-        call.enqueue(new Callback<List<StudentExamList>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<StudentExamList>> call, @NonNull Response<List<StudentExamList>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    examList = response.body();
-                    loadMoreItems();
-                } else {
-                    showError("Unexpected response");
-                }
-            }
+    private void loadMockData() {
+        examList = new ArrayList<>();
 
-            @Override
-            public void onFailure(@NonNull Call<List<StudentExamList>> call, @NonNull Throwable t) {
-                showError("Error: " + t.getMessage());
-            }
-        });
+        examList.add(new StudentExamList("NT531.P11", "Nộp bài thực hành số 6", "pending", 1729173586L, "1"));
+        examList.add(new StudentExamList("NT531.P11", "Nộp báo cáo đồ án", "completed", 1729173526L, "2"));
+        examList.add(new StudentExamList("NT131.P12", "Nộp trễ tất cả bài thực hành", "pending", 1729173466L, "3"));
+        examList.add(new StudentExamList("NT531.P11", "Nộp bài thực hành số 5", "outdated", 1729173406L, "4"));
+        examList.add(new StudentExamList("NT531.P11", "Nộp bài thực hành số 4", "outdated", 1729173346L, "5"));
+        examList.add(new StudentExamList("NT101.P13", "Bài tập 6", "pending", 1729173286L, "6"));
+        examList.add(new StudentExamList("NT118", "Đồ án", "pending", 1729173226L, "7"));
+        examList.add(new StudentExamList("NT118", "Bài tập", "completed", 1729173166L, "8"));
+        examList.add(new StudentExamList("NT118", "Lý thuyết", "completed", 1729173106L, "9"));
+        examList.add(new StudentExamList("NT118.88", "Đồ án p2", "pending", 1729173046L, "10"));
+        examList.add(new StudentExamList("NT118.69", "Bài tập", "outdated", 1729172986L, "11"));
     }
 
     private void loadMoreItems() {
@@ -102,12 +97,6 @@ public class StudentExamFragment extends Fragment {
             List<StudentExamList> newItems = examList.subList(currentDisplayedItems, endIndex);
             adapter.addExams(newItems);
             currentDisplayedItems = endIndex;
-        }
-    }
-
-    private void showError(String message) {
-        if (getContext() != null) {
-            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
         }
     }
 }

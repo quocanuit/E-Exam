@@ -17,7 +17,16 @@ import java.util.List;
 import java.util.Objects;
 
 public class StudentExamListAdapter extends RecyclerView.Adapter<StudentExamListAdapter.ViewHolder> {
-    private final List<StudentExamList> examList = new ArrayList<>();
+    private static final List<StudentExamList> examList = new ArrayList<>();
+    private static OnExamClickListener listener;
+
+    public interface OnExamClickListener {
+        void onExamClick(StudentExamList exam);
+    }
+
+    public void setOnExamClickListener(OnExamClickListener listener) {
+        StudentExamListAdapter.listener = listener;
+    }
 
     @NonNull
     @Override
@@ -55,6 +64,13 @@ public class StudentExamListAdapter extends RecyclerView.Adapter<StudentExamList
             nameTextView = itemView.findViewById(R.id.nameTextView);
             dueTextView = itemView.findViewById(R.id.dueTextView);
             examButton = itemView.findViewById(R.id.examButton);
+
+            examButton.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION && listener != null) {
+                    listener.onExamClick(examList.get(position));
+                }
+            });
         }
 
         void bind(StudentExamList exam) {
