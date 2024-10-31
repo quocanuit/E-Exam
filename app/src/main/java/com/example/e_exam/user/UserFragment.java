@@ -88,7 +88,7 @@ public class UserFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         inforList = new ArrayList<>();
-        inforList.add(new UserInfor("22520216@gm.uit.edu.vn", "07/01/2004", "Computer networks and data communications ", "Quang Nam", "MMTT2022.1"));
+        inforList.add(new UserInfor("22520216@gm.uit.edu.vn", "07/01/2004", "Quang Nam", "MMTT2022.1"));
 
         userAdapter = new UserAdapter(inforList, getContext());
         recyclerView.setAdapter(userAdapter);

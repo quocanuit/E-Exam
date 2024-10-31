@@ -42,6 +42,13 @@ public class TeacherExamList {
         isAssigned = assigned;
     }
 
+    public TeacherExamList(String name, long date, boolean isAssigned, String id) {
+        this.id = id;
+        this.name = name;
+        this.date = date;
+        this.isAssigned = isAssigned;
+    }
+
     public String getFormattedDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         return "Ngày tạo: " + sdf.format(new Date(date * 1000));

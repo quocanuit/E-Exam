@@ -51,6 +51,14 @@ public class StudentExamList {
         this.dueDate = dueDate;
     }
 
+    public StudentExamList(String className, String name, String status, long dueDate, String id) {
+        this.id = id;
+        this.className = className;
+        this.name = name;
+        this.status = status;
+        this.dueDate = dueDate;
+    }
+
     public String getFormattedDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         return "Deadline: " + sdf.format(new Date(dueDate * 1000));
