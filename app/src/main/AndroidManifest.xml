@@ -15,10 +15,9 @@
         <activity
             android:name=".MainActivity"
             android:exported="false" />
-        <!--<activity
+        <activity
             android:name=".StudentActivity"
             android:exported="false" />
-            android:name=".TeacherActivity"-->
         <activity
             android:name=".ClassActivity"
             android:exported="false" />
@@ -26,7 +25,7 @@
             android:name=".StudentGradeActivity"
             android:exported="false" />
         <activity
-            android:name=".StudentActivity"
+            android:name=".TeacherActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
