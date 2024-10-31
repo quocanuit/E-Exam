@@ -38,7 +38,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
 
         holder.tvEmail.setText(userInfor.getEmail());
         holder.tvBirthday.setText(userInfor.getBirthday());
-        holder.tvMajor.setText(userInfor.getSpecialized());
         holder.tvHometown.setText(userInfor.getHometown());
         holder.tvClass.setText(userInfor.getClass_activity());
     }

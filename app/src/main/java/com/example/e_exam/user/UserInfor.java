@@ -3,14 +3,12 @@ package com.example.e_exam.user;
 public class UserInfor {
     private String email;
     private String birthday;
-    private String major;
     private String hometown;
     private String class_activity;
 
-    public UserInfor(String email, String birthday, String major, String hometown, String class_activity) {
+    public UserInfor(String email, String birthday, String hometown, String class_activity) {
         this.email = email;
         this.birthday = birthday;
-        this.major = major;
         this.hometown = hometown;
         this.class_activity = class_activity;
     }
@@ -29,14 +27,6 @@ public class UserInfor {
 
     public void setBirthday(String birthday) {
         this.birthday = birthday;
-    }
-
-    public String getSpecialized() {
-        return major;
-    }
-
-    public void setSpecialized(String major) {
-        this.major = major;
     }
 
     public String getHometown() {

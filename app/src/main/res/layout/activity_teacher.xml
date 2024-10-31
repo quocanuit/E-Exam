@@ -4,15 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".TeacherActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
+        android:background="@color/surface_container"
         app:layout_constraintTop_toTopOf="parent"
-        app:title="Quản lý lớp" />
+        app:title="@string/app_name" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
