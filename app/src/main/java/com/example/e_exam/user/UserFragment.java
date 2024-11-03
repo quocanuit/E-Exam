@@ -1,19 +1,28 @@
 package com.example.e_exam.user;
 
+import static android.app.Activity.RESULT_OK;
+
+import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.e_exam.R;
 
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 
 /**
@@ -30,10 +39,9 @@ public class UserFragment extends Fragment {
     private static final String ARG_POSITION = "position";
     private static final String ARG_AVATAR = "avatar";
 
-    private RecyclerView recyclerView;
-    private UserAdapter userAdapter;
-    private ArrayList<UserInfor> inforList;
-    private TextView tvName, tvID_Position;
+    private ArrayList<UserInformation> userList;
+    private TextView tvName, tvID, tvEmail, tvBirthday, tvClass, tvHometown;
+    private ImageButton btnNotification, btnSetting;
     private ImageView ivAvatar;
 
     // TODO: Rename and change types of parameters
@@ -76,6 +84,13 @@ public class UserFragment extends Fragment {
             isTeacher = getArguments().getBoolean(ARG_POSITION);
             avatar = getArguments().getInt(ARG_AVATAR);
         }
+        getParentFragmentManager().setFragmentResultListener("requestKey", this, (requestKey, bundle) -> {
+            String id = bundle.getString("id");
+            String fullName = bundle.getString("fullName");
+            String classAc = bundle.getString("class");
+
+            // Handle the result here
+        });
     }
 
     @Override
@@ -84,31 +99,62 @@ public class UserFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_user, container, false);
 
-        recyclerView = view.findViewById(R.id.rv_Information);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        inforList = new ArrayList<>();
-        inforList.add(new UserInfor("22520216@gm.uit.edu.vn", "07/01/2004", "Computer networks and data communications ", "Quang Nam", "MMTT2022.1"));
-
-        userAdapter = new UserAdapter(inforList, getContext());
-        recyclerView.setAdapter(userAdapter);
-
         tvName = view.findViewById(R.id.tv_Name);
-        tvID_Position = view.findViewById(R.id.tv_ID_Pos);
+        tvID = view.findViewById(R.id.tv_ID);
+        tvEmail = view.findViewById(R.id.tv_Email);
+        tvBirthday = view.findViewById(R.id.tv_Birthday);
+        tvClass = view.findViewById(R.id.tv_Class);
+        tvHometown = view.findViewById(R.id.tv_Hometown);
+        btnNotification = view.findViewById(R.id.btn_Notification);
+        btnSetting = view.findViewById(R.id.btn_Setting);
+
         ivAvatar = view.findViewById(R.id.iv_Avatar);
 
-        tvName.setText("Nguyễn Hữu Đạt");
-        String position = isTeacher ? "Teacher" : "Student";
-        tvID_Position.setText("22520216 | " + position);
-        //tvID_Position.setText(id +" | " + position);
+        userList = new ArrayList<>();
+        userList.add(new UserInformation("Nguyễn Hữu Đạt","22520216", "22520216@gm.uit.edu.vn", "07/01/2004", "MMT&TT2022.1", "QUANG NAM", false));
 
-        if(position == "Teacher") {
+
+        UserInformation user = userList.get(0);
+
+        tvName.setText(user.getName());
+        tvID.setText(user.getId());
+        tvEmail.setText(user.getEmail());
+        tvBirthday.setText(user.getBirthday());
+        tvClass.setText(user.getClass_activity());
+        tvHometown.setText(user.getHometown());
+
+        Boolean position = user.isTeacher();
+        if(position) {
             ivAvatar.setImageResource(R.drawable.teacher);
         }
         else
             ivAvatar.setImageResource(R.drawable.student);
 
+        btnNotification.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ChangePasswordFragment changePasswordFragment = new ChangePasswordFragment();
+                requireActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.frame_layout, changePasswordFragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
+        });
+
+        btnSetting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ChangePasswordFragment changePasswordFragment = new ChangePasswordFragment();
+                requireActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.frame_layout, changePasswordFragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
+        });
+
+
         return view;
     }
-
 }

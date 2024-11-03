@@ -1,18 +1,22 @@
 package com.example.e_exam.user;
 
-public class UserInfor {
+public class UserInformation {
+    private String name;
     private String email;
     private String birthday;
-    private String major;
+    private String id;
     private String hometown;
     private String class_activity;
+    private boolean isTeacher;
 
-    public UserInfor(String email, String birthday, String major, String hometown, String class_activity) {
+    public UserInformation(String name, String id, String email, String birthday, String class_activity, String hometown, Boolean isTeacher) {
+        this.name = name;
+        this.id = id;
         this.email = email;
         this.birthday = birthday;
-        this.major = major;
-        this.hometown = hometown;
         this.class_activity = class_activity;
+        this.hometown = hometown;
+        this.isTeacher = isTeacher;
     }
 
     public String getEmail() {
@@ -31,13 +35,9 @@ public class UserInfor {
         this.birthday = birthday;
     }
 
-    public String getSpecialized() {
-        return major;
-    }
+    public String getId() { return id; }
 
-    public void setSpecialized(String major) {
-        this.major = major;
-    }
+    public void setId(String id) { this.id = id; }
 
     public String getHometown() {
         return hometown;
@@ -53,5 +53,21 @@ public class UserInfor {
 
     public void setClass_activity(String class_activity) {
         this.class_activity = class_activity;
+    }
+
+    public boolean isTeacher() {
+        return isTeacher;
+    }
+
+    public void setTeacher(boolean teacher) {
+        isTeacher = teacher;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
