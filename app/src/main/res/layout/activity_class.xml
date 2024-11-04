@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <!-- TextView để hiển thị tên lớp với khoảng cách phía trên các nút -->
+    <TextView
+        android:id="@+id/class_name_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="32dp"
+        android:textSize="24sp"
+        android:textColor="@android:color/black" />
+
+    <!-- Nút Tài liệu -->
+    <Button
+        android:id="@+id/btn_document"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/class_name_text_view"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/purple_700"
+        android:text="Tài liệu"
+        android:textColor="@android:color/white" />
+
+    <!-- Nút Bài tập -->
+    <Button
+        android:id="@+id/btn_assignment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_document"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/purple_700"
+        android:text="Bài tập"
+        android:textColor="@android:color/white" />
+
+    <!-- Nút Thông báo -->
+    <Button
+        android:id="@+id/btn_notification"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_assignment"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/purple_700"
+        android:text="Thông báo"
+        android:textColor="@android:color/white" />
+
+</RelativeLayout>

@@ -1,26 +1,21 @@
 <resources>
     <string name="app_name">E-Exam</string>
     <string name="notify">Notifications</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <!---->
     <string name="student_class">Hello student class fragment</string>
     <string name="student_exam">Hello student exam fragment</string>
     <string name="student_score">Hello student score fragment</string>
     <string name="user_frm">Hello user fragment</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <!---->
     <string name="teacher_class">Hello teacher class fragment</string>
-    <string name="teacher_exam">Hello teacher exam fragment</string>
-    <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
-
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
-
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="new_exam">Tạo bài tập</string>
+    <string name="bai_tap">Bài tập</string>
+    <string name="all_classes">Tất cả lớp học</string>
+    <string name="is_pending">Làm bài</string>
+    <string name="is_done">Đã xong</string>
+    <string name="is_outdated">Quá hạn</string>
+    <string name="fte_all_exam">Tất cả</string>
+    <string name="fte_pending_exam">Chưa làm</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

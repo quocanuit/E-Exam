@@ -1,64 +1,71 @@
 package com.example.e_exam;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link TeacherClassFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
+
 public class TeacherClassFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private ArrayList<String> classList; // Danh sách tên lớp học
+    private RecyclerView recyclerView; // RecyclerView để hiển thị danh sách lớp học
+    private ClassAdapter classAdapter; // Adapter cho RecyclerView
+    private Button createClassButton;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public TeacherClassFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment TeacherClassFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static TeacherClassFragment newInstance(String param1, String param2) {
-        TeacherClassFragment fragment = new TeacherClassFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_teacher_class, container, false);
+
+        // Khởi tạo danh sách lớp học
+        classList = new ArrayList<>();
+
+        // Khởi tạo RecyclerView
+        recyclerView = view.findViewById(R.id.recyclerView_classes);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        classAdapter = new ClassAdapter(classList);
+        recyclerView.setAdapter(classAdapter);
+
+        // Xử lý sự kiện nhấn nút "Tạo lớp học"
+        createClassButton = view.findViewById(R.id.btn_create_class);
+        createClassButton.setOnClickListener(v -> showCreateClassDialog());
+
+        return view;
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_teacher_class, container, false);
+    private void showCreateClassDialog() {
+        // Tạo AlertDialog để nhập tên lớp học
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_create_class, null);
+
+        EditText editClassName = dialogView.findViewById(R.id.edit_class_name);
+        Button btnCreate = dialogView.findViewById(R.id.btn_create);
+
+        builder.setView(dialogView);
+        AlertDialog dialog = builder.create();
+
+        btnCreate.setOnClickListener(v -> {
+            String className = editClassName.getText().toString().trim();
+            if (!className.isEmpty()) {
+                classList.add(className);
+                classAdapter.notifyItemInserted(classList.size() - 1); // Thông báo rằng một mục đã được chèn vào cuối
+                dialog.dismiss(); // Đóng hộp thoại sau khi tạo
+            } else {
+                editClassName.setError("Tên lớp không được để trống!");
+            }
+        });
+
+        dialog.show();
     }
 }
