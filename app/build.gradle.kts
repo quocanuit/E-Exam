@@ -49,5 +49,10 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
     implementation("com.google.firebase:firebase-analytics")
-    implementation ("androidx.recyclerview:recyclerview:1.2.1")
+    implementation("com.google.firebase:firebase-auth:23.1.0")
+    implementation("com.github.bumptech.glide:glide:4.14.2")
+    implementation("de.hdodenhof:circleimageview:3.1.0")
+    implementation("androidx.recyclerview:recyclerview:1.2.1")
+    implementation("com.google.firebase:firebase-messaging")
+    implementation("androidx.preference:preference:1.2.1")
 }
