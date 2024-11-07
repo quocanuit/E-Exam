@@ -1,114 +1,192 @@
 package com.example.e_exam.user;
 
+import static android.app.Activity.RESULT_OK;
+
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+//import com.example.e_exam.Manifest;
+import com.bumptech.glide.Glide;
 import com.example.e_exam.R;
+import com.google.firebase.Firebase;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
+import android.Manifest;
+import android.widget.Toast;
+
+import java.io.IOException;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link UserFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import de.hdodenhof.circleimageview.CircleImageView;
+
+
 public class UserFragment extends Fragment {
+    private View view;
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_NAME = "name";
-    private static final String ARG_ID = "id";
-    private static final String ARG_POSITION = "position";
-    private static final String ARG_AVATAR = "avatar";
+    private ArrayList<UserInformation> userList;
+    private TextView tvName, tvID, tvEmail, tvBirthday, tvClass, tvHometown;
+    private Button btnChangePassword;
+    private CircleImageView btnAvatar;
 
-    private RecyclerView recyclerView;
-    private UserAdapter userAdapter;
-    private ArrayList<UserInfor> inforList;
-    private TextView tvName, tvID_Position;
-    private ImageView ivAvatar;
-
-    // TODO: Rename and change types of parameters
-    private String name;
-    private String id;
-    private boolean isTeacher;
-    private int avatar;
+    final private ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+        @Override
+        public void onActivityResult(ActivityResult result) {
+            if (result.getResultCode() == RESULT_OK) {
+                Intent intent = result.getData();
+                if (intent == null)
+                    return;
+                Uri uri = intent.getData();
+                try {
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
+                    setBitmapImageView(bitmap);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    });
 
     public UserFragment() {
         // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param name User's name.
-     * @param id User's ID.
-     * @param isTeacher Boolean to indicate if the user is a teacher.
-     * @return A new instance of fragment UserFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static UserFragment newInstance(String name, String id, boolean isTeacher, int avatar) {
-        UserFragment fragment = new UserFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_NAME, name);
-        args.putString(ARG_ID, id);
-        args.putBoolean(ARG_POSITION, isTeacher);
-        args.putInt(ARG_AVATAR, avatar);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            name = getArguments().getString(ARG_NAME);
-            id = getArguments().getString(ARG_ID);
-            isTeacher = getArguments().getBoolean(ARG_POSITION);
-            avatar = getArguments().getInt(ARG_AVATAR);
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_user, container, false);
+        view = inflater.inflate(R.layout.fragment_user, container, false);
 
-        recyclerView = view.findViewById(R.id.rv_Information);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        inforList = new ArrayList<>();
-        inforList.add(new UserInfor("22520216@gm.uit.edu.vn", "07/01/2004", "Quang Nam", "MMTT2022.1"));
-
-        userAdapter = new UserAdapter(inforList, getContext());
-        recyclerView.setAdapter(userAdapter);
-
-        tvName = view.findViewById(R.id.tv_Name);
-        tvID_Position = view.findViewById(R.id.tv_ID_Pos);
-        ivAvatar = view.findViewById(R.id.iv_Avatar);
-
-        tvName.setText("Nguyễn Hữu Đạt");
-        String position = isTeacher ? "Teacher" : "Student";
-        tvID_Position.setText("22520216 | " + position);
-        //tvID_Position.setText(id +" | " + position);
-
-        if(position == "Teacher") {
-            ivAvatar.setImageResource(R.drawable.teacher);
-        }
-        else
-            ivAvatar.setImageResource(R.drawable.student);
+        initUI();
+        initListener();
 
         return view;
     }
 
+    private void initUI() {
+        tvName = view.findViewById(R.id.tv_Name);
+        tvID = view.findViewById(R.id.tv_ID);
+        tvEmail = view.findViewById(R.id.tv_Email);
+        tvBirthday = view.findViewById(R.id.tv_Birthday);
+        tvClass = view.findViewById(R.id.tv_Class);
+        tvHometown = view.findViewById(R.id.tv_Hometown);
+        btnChangePassword = view.findViewById(R.id.btn_ChangePassword);
+        btnAvatar = view.findViewById(R.id.btn_Avatar);
+    }
+
+    private void initListener() {
+        btnChangePassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ChangePasswordFragment changePasswordFragment = new ChangePasswordFragment();
+                requireActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.frame_layout, changePasswordFragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
+        });
+
+        btnAvatar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onClickRequestPermission();
+            }
+        });
+    }
+
+    private void showUserInformation() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if(user == null)
+            return;
+
+        String name = user.getDisplayName();
+        String email = user.getEmail();
+        Uri photoUrl = user.getPhotoUrl();
+
+        if (name == null) {
+            tvName.setVisibility(View.GONE);
+        }
+        else {
+            tvName.setVisibility(View.VISIBLE);
+            tvName.setText(name);
+        }
+
+        tvEmail.setText(email);
+        Glide.with(this).load(photoUrl).error(R.drawable.student).into(btnAvatar);
+    }
+
+    private void setUserInformation() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if(user == null) {
+            return;
+        }
+        // Lay du lieu tu firebase
+
+        Glide.with(getActivity()).load(user.getPhotoUrl()).error(R.drawable.student).into(btnAvatar);
+    }
+
+    private void onClickRequestPermission() {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            openGallery();
+            return;
+        }
+        if (getActivity().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            openGallery();
+        }
+        else {
+            String [] permission = {Manifest.permission.READ_EXTERNAL_STORAGE};
+            getActivity().requestPermissions(permission, 10);
+        }
+   }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == 10) {
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults.length > 0) {
+                openGallery();
+            }
+        } else {
+            Toast.makeText(getActivity(), "Permission denied! Please allow access to continue.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void openGallery() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        mActivityResultLauncher.launch(Intent.createChooser(intent, "Select Picture"));
+    }
+
+    private void setBitmapImageView(Bitmap bitmapImageView) {
+        btnAvatar.setImageBitmap(bitmapImageView);
+    }
 }
