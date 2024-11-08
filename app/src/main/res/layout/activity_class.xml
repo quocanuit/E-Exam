@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
@@ -11,43 +13,116 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="32dp"
+        android:text="Tên lớp"
         android:textSize="24sp"
         android:textColor="@android:color/black" />
 
-    <!-- Nút Tài liệu -->
-    <Button
-        android:id="@+id/btn_document"
-        android:layout_width="wrap_content"
+    <!-- CardView cho Tài liệu -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_document"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/class_name_text_view"
-        android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
-        android:backgroundTint="@color/purple_700"
-        android:text="Tài liệu"
-        android:textColor="@android:color/white" />
+        android:layout_marginBottom="8dp"
+        android:layout_centerHorizontal="true"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp">
 
-    <!-- Nút Bài tập -->
-    <Button
-        android:id="@+id/btn_assignment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/btn_document"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="@color/purple_700"
-        android:text="Bài tập"
-        android:textColor="@android:color/white" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
 
-    <!-- Nút Thông báo -->
-    <Button
-        android:id="@+id/btn_notification"
-        android:layout_width="wrap_content"
+            <ImageView
+                android:id="@+id/image_document"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/documentation"
+                android:layout_alignParentStart="true"/>
+
+            <TextView
+                android:id="@+id/text_document"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/image_document"
+                android:layout_marginStart="16dp"
+                android:text="Tài liệu"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"/>
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- CardView cho Bài tập -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_assignment"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/btn_assignment"
-        android:layout_centerHorizontal="true"
+        android:layout_below="@id/card_document"
         android:layout_marginTop="16dp"
-        android:backgroundTint="@color/purple_700"
-        android:text="Thông báo"
-        android:textColor="@android:color/white" />
+        android:layout_marginBottom="8dp"
+        android:layout_centerHorizontal="true"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+
+            <ImageView
+                android:id="@+id/image_assignment"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/assignment"
+                android:layout_alignParentStart="true"/>
+
+            <TextView
+                android:id="@+id/text_assignment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/image_assignment"
+                android:layout_marginStart="16dp"
+                android:text="Bài tập"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"/>
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- CardView cho Thông báo -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_notification"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/card_assignment"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"
+        android:layout_centerHorizontal="true"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+
+            <ImageView
+                android:id="@+id/image_notification"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/notification"
+                android:layout_alignParentStart="true"/>
+
+            <TextView
+                android:id="@+id/text_notification"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/image_notification"
+                android:layout_marginStart="16dp"
+                android:text="Thông báo"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"/>
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
 
 </RelativeLayout>
