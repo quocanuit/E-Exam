@@ -4,9 +4,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,11 +29,29 @@ public class TeacherExamFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_teacher_exam, container, false);
 
+        // Find the button
+        Button createExamButton = view.findViewById(R.id.createExamButton);  // Button id from XML
+
+        // Set an OnClickListener to handle button clicks
+        createExamButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Perform fragment transaction to navigate to ExamCreateFragment
+                assert getFragmentManager() != null;
+                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                transaction.replace(R.id.frame_layout, new ExamCreateFragment());  // Replace with new fragment
+                transaction.addToBackStack(null);  // Allow user to navigate back to TeacherExamFragment
+                transaction.commit();
+            }
+        });
+
+        // Set up RecyclerView
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new TeacherExamListAdapter();
         recyclerView.setAdapter(adapter);
 
+        // Initialize and set up scroll listener
         setupScrollListener();
         loadMockData();
         loadMoreItems();
@@ -45,6 +65,7 @@ public class TeacherExamFragment extends Fragment {
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
                 if (layoutManager == null) return;
+
                 int visibleItemCount = layoutManager.getChildCount();
                 int totalItemCount = layoutManager.getItemCount();
                 int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
@@ -89,3 +110,4 @@ public class TeacherExamFragment extends Fragment {
         }
     }
 }
+

@@ -1,10 +1,14 @@
 // ExamDetailFragment.java
 package com.example.e_exam;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.TextView;
 import androidx.fragment.app.Fragment;
 import java.text.SimpleDateFormat;
@@ -26,6 +30,7 @@ public class ExamDetailFragment extends Fragment {
         return fragment;
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_exam_detail, container, false);
@@ -46,6 +51,15 @@ public class ExamDetailFragment extends Fragment {
             String formattedDate = sdf.format(new Date(dueDate * 1000L));
             dueDateText.setText(String.format("Deadline: %s", formattedDate));
         }
+
+        // Set up the WebView to display the PDF
+        WebView pdfWebView = view.findViewById(R.id.pdfWebView);
+        WebSettings webSettings = pdfWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        pdfWebView.setWebViewClient(new WebViewClient());
+
+        String pdfUrl = "file:///android_asset/exam.pdf";
+        pdfWebView.loadUrl("https://docs.google.com/viewer?url=" + pdfUrl);
 
         return view;
     }
