@@ -2,10 +2,10 @@ package com.example.e_exam;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import com.example.e_exam.databinding.ActivityRegisterBinding; // Import lớp ViewBinding
+import com.example.e_exam.databinding.ActivityRegisterBinding;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -17,9 +17,12 @@ public class RegisterActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Khởi tạo FirebaseApp trước khi sử dụng FirebaseAuth
+        FirebaseApp.initializeApp(this);
+
         // Gán đối tượng binding với layout
         binding = ActivityRegisterBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot()); // Thiết lập root view cho activity
+        setContentView(binding.getRoot());
 
         // Khởi tạo FirebaseAuth
         mAuth = FirebaseAuth.getInstance();
