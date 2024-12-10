@@ -82,8 +82,19 @@
         android:id="@+id/studentTestButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:backgroundTint="@color/purple_700"
         android:text="Student Test"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        app:cornerRadius="50dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/AdminButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/purple_700"
+        android:text="Admin"
         android:textAllCaps="false"
         android:textColor="@android:color/white"
         app:cornerRadius="50dp" />

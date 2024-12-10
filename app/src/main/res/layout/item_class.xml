@@ -14,7 +14,7 @@
         <TextView
             android:id="@+id/tvClassName"
             android:layout_width="0dp"
-            android:layout_height="41dp"
+            android:layout_height="86dp"
             android:layout_weight="1"
             android:text="Class Name"
             android:textSize="18sp"

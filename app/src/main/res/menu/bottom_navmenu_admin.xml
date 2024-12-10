@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/classroom"
+        android:title="Tạo Lớp"
+        android:icon="@drawable/baseline_school_24"/>
+    <item
+        android:id="@+id/exam"
+        android:title="Danh sách giáo viên"
+        android:icon="@drawable/teacher"/>
+    <item
+        android:id="@+id/user"
+        android:title="Danh sách học sinh"
+        android:icon="@drawable/student"/>
+</menu>
