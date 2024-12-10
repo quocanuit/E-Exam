@@ -43,6 +43,7 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.retrofit2)
+    implementation(libs.firebase.auth)
     implementation(libs.retrofit2.converter.gson)
     implementation(libs.compose.theme.adapter)
     testImplementation(libs.junit)
