@@ -1,22 +1,25 @@
 package com.example.e_exam;
 
 import android.os.Bundle;
-
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-
+import androidx.activity.EdgeToEdge;
 import com.example.e_exam.databinding.ActivityTeacherBinding;
+import java.util.ArrayList;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import com.example.e_exam.user.UserFragment;
+import retrofit2.Retrofit;
 
 public class TeacherActivity extends AppCompatActivity {
 
     ActivityTeacherBinding binding;
+    ArrayList<String> classList; // Danh sách tên lớp học
+    ClassAdapter classAdapter; // Adapter cho RecyclerView
+    RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

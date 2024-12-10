@@ -1,12 +1,32 @@
 <resources>
     <string name="app_name">E-Exam</string>
     <string name="notify">Notifications</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <!---->
     <string name="student_class">Hello student class fragment</string>
     <string name="student_exam">Hello student exam fragment</string>
     <string name="student_score">Hello student score fragment</string>
     <string name="user_frm">Hello user fragment</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <!---->
     <string name="teacher_class">Hello teacher class fragment</string>
-    <string name="teacher_exam">Hello teacher exam fragment</string>
+    <string name="new_exam">Tạo bài tập</string>
+    <string name="bai_tap">Bài tập</string>
+    <string name="all_classes">Tất cả lớp học</string>
+    <string name="is_pending">Làm bài</string>
+    <string name="is_done">Đã xong</string>
+    <string name="is_outdated">Quá hạn</string>
+    <string name="fte_all_exam">Tất cả</string>
+    <string name="fte_pending_exam">Chưa làm</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!--    -->
+    <string name="messages_header">Message Header</string>
+    <string name="signature_title">Signature Title</string>
+    <string name="reply_title">Reply Title</string>
+    <string name="sync_header">YSync Header</string>
+    <string name="sync_title">Sync Title</string>
+    <string name="attachment_title">Attachment Title</string>
+    <string name="attachment_summary_on">Attachment is enabled</string>
+    <string name="attachment_summary_off">Attachment is disabled</string>
+
 </resources>
