@@ -2,30 +2,36 @@ package com.example.e_exam;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.e_exam.databinding.ActivityRegisterBinding;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class RegisterActivity extends AppCompatActivity {
 
     private ActivityRegisterBinding binding;
     private FirebaseAuth mAuth;
+    private DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Khởi tạo FirebaseApp trước khi sử dụng FirebaseAuth
+        // Khởi tạo FirebaseApp
         FirebaseApp.initializeApp(this);
 
         // Gán đối tượng binding với layout
         binding = ActivityRegisterBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Khởi tạo FirebaseAuth
+        // Khởi tạo FirebaseAuth và DatabaseReference
         mAuth = FirebaseAuth.getInstance();
+        databaseReference = FirebaseDatabase.getInstance().getReference("users");
 
         // Xử lý sự kiện bấm nút Register
         binding.registerButton.setOnClickListener(v -> {
@@ -34,7 +40,6 @@ public class RegisterActivity extends AppCompatActivity {
 
         // Xử lý sự kiện bấm vào "Already have an account? Login"
         binding.redirectToLogin.setOnClickListener(v -> {
-            // Điều hướng người dùng quay lại màn hình đăng nhập
             Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
             startActivity(intent);
         });
@@ -46,15 +51,24 @@ public class RegisterActivity extends AppCompatActivity {
         String password = binding.registerPassword.getText().toString().trim();
         String confirmPassword = binding.registerConfirmPassword.getText().toString().trim();
 
+        // Lấy vai trò từ RadioGroup
+        int selectedRoleId = binding.roleRadioGroup.getCheckedRadioButtonId();
+        if (selectedRoleId == -1) {
+            Toast.makeText(this, "Please select a role", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        RadioButton selectedRoleButton = findViewById(selectedRoleId);
+        String role = selectedRoleButton.getText().toString();
+
         // Kiểm tra xem các trường có rỗng không
         if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-            Toast.makeText(RegisterActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // Kiểm tra mật khẩu và xác nhận mật khẩu có khớp không
         if (!password.equals(confirmPassword)) {
-            Toast.makeText(RegisterActivity.this, "Passwords do not match", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -62,13 +76,22 @@ public class RegisterActivity extends AppCompatActivity {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        // Đăng ký thành công
-                        Toast.makeText(RegisterActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
-                        // Điều hướng về màn hình đăng nhập (hoặc màn hình chính)
-                        finish(); // Quay lại màn hình trước (MainActivity)
+                        // Lấy UID của người dùng vừa đăng ký
+                        String uid = mAuth.getCurrentUser().getUid();
+
+                        // Lưu thông tin người dùng vào Realtime Database
+                        com.example.e_exam.User user = new com.example.e_exam.User(uid, email, role);
+                        databaseReference.child(uid).setValue(user)
+                                .addOnCompleteListener(databaseTask -> {
+                                    if (databaseTask.isSuccessful()) {
+                                        Toast.makeText(this, "Registration successful", Toast.LENGTH_SHORT).show();
+                                        finish();
+                                    } else {
+                                        Toast.makeText(this, "Failed to save user: " + databaseTask.getException().getMessage(), Toast.LENGTH_LONG).show();
+                                    }
+                                });
                     } else {
-                        // Xảy ra lỗi
-                        Toast.makeText(RegisterActivity.this, "Registration failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Registration failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
     }
@@ -76,7 +99,6 @@ public class RegisterActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Giải phóng đối tượng binding khi không còn sử dụng
-        binding = null;
+        binding = null; // Giải phóng đối tượng binding
     }
 }
