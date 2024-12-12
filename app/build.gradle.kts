@@ -47,6 +47,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.retrofit2.converter.gson)
     implementation(libs.compose.theme.adapter)
+    implementation(libs.firebase.storage)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
