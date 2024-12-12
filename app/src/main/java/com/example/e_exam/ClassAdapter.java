@@ -70,6 +70,7 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
         TextView tvClassName;
         ImageView iconCourse;
 
+
         public ClassViewHolder(@NonNull View itemView) {
             super(itemView);
             tvClassName = itemView.findViewById(R.id.tvClassName);
