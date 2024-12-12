@@ -2,6 +2,7 @@ package com.example.e_exam;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -88,12 +89,14 @@ public class MainActivity extends AppCompatActivity {
                 });
             } else {
                 Toast.makeText(this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-        // Thiết lập sự kiện bấm cho nút Student Test
-        findViewById(R.id.AdminButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, AdminActivityClass.class);
-                startActivity(intent);
+                // Thiết lập sự kiện bấm cho nút Student Test
+                findViewById(R.id.AdminButton).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(MainActivity.this, AdminActivityClass.class);
+                        startActivity(intent);
+                    }
+                });
             }
         });
     }
