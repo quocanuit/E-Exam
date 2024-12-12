@@ -2,6 +2,7 @@ package com.example.e_exam;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -56,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.loginButton).setOnClickListener(v -> {
             loginUser(); // Logic đăng nhập
         });
+
     }
 
     private void loginUser() {
@@ -79,7 +81,9 @@ public class MainActivity extends AppCompatActivity {
                             startActivity(new Intent(MainActivity.this, StudentActivity.class));
                         } else if ("Teacher".equals(role)) {
                             startActivity(new Intent(MainActivity.this, TeacherActivity.class));
-                        } else {
+                        } else if ("admin".equals(role)) {
+                            startActivity(new Intent(MainActivity.this, AdminActivityClass.class));}
+                            else {
                             Toast.makeText(this, "Invalid role assigned", Toast.LENGTH_SHORT).show();
                         }
                     } else {
@@ -88,12 +92,14 @@ public class MainActivity extends AppCompatActivity {
                 });
             } else {
                 Toast.makeText(this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-        // Thiết lập sự kiện bấm cho nút Student Test
-        findViewById(R.id.AdminButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, AdminActivityClass.class);
-                startActivity(intent);
+                // Thiết lập sự kiện bấm cho nút Student Test
+                findViewById(R.id.AdminButton).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(MainActivity.this, AdminActivityClass.class);
+                        startActivity(intent);
+                    }
+                });
             }
         });
     }
