@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
                             startActivity(new Intent(MainActivity.this, StudentActivity.class));
                         } else if ("Teacher".equals(role)) {
                             startActivity(new Intent(MainActivity.this, TeacherActivity.class));
-                        } else if ("admin".equals(role)) {
+                        } else if ("Admin".equals(role)) {
                             startActivity(new Intent(MainActivity.this, AdminActivityClass.class));}
                             else {
                             Toast.makeText(this, "Invalid role assigned", Toast.LENGTH_SHORT).show();
