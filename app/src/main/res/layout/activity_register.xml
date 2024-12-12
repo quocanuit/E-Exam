@@ -28,12 +28,12 @@
             android:id="@+id/registerEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/edittext_background"
+            android:drawablePadding="8dp"
             android:hint="Email"
             android:inputType="textEmailAddress"
-            android:drawablePadding="8dp"
-            android:padding="12dp"
-            android:background="@drawable/edittext_background"
-            android:layout_marginBottom="16dp"/>
+            android:padding="12dp" />
 
         <!-- Password Field -->
         <EditText
@@ -60,17 +60,38 @@
             android:layout_marginBottom="24dp"/>
 
         <!-- Register Button -->
+
+        <!-- Login Redirect Button -->
+
+        <RadioGroup
+            android:id="@+id/roleRadioGroup"
+            android:layout_width="match_parent"
+            android:layout_height="108dp">
+
+
+            <RadioButton
+                android:id="@+id/btn_isStudent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Student" />
+
+            <RadioButton
+                android:id="@+id/btn_isTeacher"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Teacher" />
+        </RadioGroup>
+
         <Button
             android:id="@+id/registerButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="REGISTER"
+            android:layout_marginBottom="16dp"
             android:backgroundTint="#6B44C8"
-            android:textColor="#FFFFFF"
             android:padding="12dp"
-            android:layout_marginBottom="16dp"/>
+            android:text="REGISTER"
+            android:textColor="#FFFFFF" />
 
-        <!-- Login Redirect Button -->
         <TextView
             android:id="@+id/redirectToLogin"
             android:layout_width="wrap_content"
@@ -82,5 +103,6 @@
             android:layout_gravity="center"
             android:clickable="true"
             android:focusable="true"/>
+
     </LinearLayout>
 </ScrollView>
