@@ -40,24 +40,24 @@
             android:id="@+id/registerPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/edittext_background"
+            android:drawablePadding="8dp"
             android:hint="Password"
             android:inputType="textPassword"
-            android:drawablePadding="8dp"
-            android:padding="12dp"
-            android:background="@drawable/edittext_background"
-            android:layout_marginBottom="16dp"/>
+            android:padding="12dp" />
 
         <!-- Confirm Password Field -->
         <EditText
             android:id="@+id/registerConfirmPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/edittext_background"
+            android:drawablePadding="8dp"
             android:hint="Confirm Password"
             android:inputType="textPassword"
-            android:drawablePadding="8dp"
-            android:padding="12dp"
-            android:background="@drawable/edittext_background"
-            android:layout_marginBottom="24dp"/>
+            android:padding="12dp" />
 
         <!-- Register Button -->
 
@@ -66,8 +66,21 @@
         <RadioGroup
             android:id="@+id/roleRadioGroup"
             android:layout_width="match_parent"
-            android:layout_height="108dp">
+            android:layout_height="160dp"
+            android:orientation="vertical">
 
+
+            <RadioButton
+                android:id="@+id/btn_isAdmin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Admin" />
+
+            <RadioButton
+                android:id="@+id/btn_isTeacher"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Teacher" />
 
             <RadioButton
                 android:id="@+id/btn_isStudent"
@@ -75,17 +88,12 @@
                 android:layout_height="wrap_content"
                 android:text="Student" />
 
-            <RadioButton
-                android:id="@+id/btn_isTeacher"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Teacher" />
         </RadioGroup>
 
         <Button
             android:id="@+id/registerButton"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="98dp"
             android:layout_marginBottom="16dp"
             android:backgroundTint="#6B44C8"
             android:padding="12dp"
@@ -96,13 +104,13 @@
             android:id="@+id/redirectToLogin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Already have an account? Login"
-            android:textSize="14sp"
-            android:textColor="#6B44C8"
-            android:layout_marginTop="16dp"
             android:layout_gravity="center"
+            android:layout_marginTop="16dp"
             android:clickable="true"
-            android:focusable="true"/>
+            android:focusable="true"
+            android:text="Already have an account? Login"
+            android:textColor="#6B44C8"
+            android:textSize="14sp" />
 
     </LinearLayout>
 </ScrollView>

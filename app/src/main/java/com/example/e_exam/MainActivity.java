@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.loginButton).setOnClickListener(v -> {
             loginUser(); // Logic đăng nhập
         });
+
     }
 
     private void loginUser() {
@@ -80,7 +81,9 @@ public class MainActivity extends AppCompatActivity {
                             startActivity(new Intent(MainActivity.this, StudentActivity.class));
                         } else if ("Teacher".equals(role)) {
                             startActivity(new Intent(MainActivity.this, TeacherActivity.class));
-                        } else {
+                        } else if ("Admin".equals(role)) {
+                            startActivity(new Intent(MainActivity.this, AdminActivityClass.class));}
+                            else {
                             Toast.makeText(this, "Invalid role assigned", Toast.LENGTH_SHORT).show();
                         }
                     } else {
