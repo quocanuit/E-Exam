@@ -31,6 +31,8 @@
         <activity
             android:name=".AdminActivityClass"
             android:exported="false" />
+        <activity android:name=".ForgetPass"
+            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
