@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/questionText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Question"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/answerA"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Answer A"
+        android:layout_marginBottom="4dp" />
+
+    <EditText
+        android:id="@+id/answerB"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Answer B"
+        android:layout_marginBottom="4dp" />
+
+    <EditText
+        android:id="@+id/answerC"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Answer C"
+        android:layout_marginBottom="4dp" />
+
+    <EditText
+        android:id="@+id/answerD"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Answer D"
+        android:layout_marginBottom="4dp" />
+
+    <EditText
+        android:id="@+id/correctAnswer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Correct Answer"
+        android:layout_marginBottom="8dp" />
+</LinearLayout>

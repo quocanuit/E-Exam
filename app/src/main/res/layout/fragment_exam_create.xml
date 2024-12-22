@@ -68,5 +68,12 @@
             android:text="Create Exam"
             android:layout_marginTop="16dp" />
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/questionsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:scrollbars="vertical" />
+
     </LinearLayout>
 </ScrollView>

@@ -12,19 +12,23 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.e_exam.adapter.QuestionAdapter;
+import com.example.e_exam.model.Question;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -37,32 +41,42 @@ public class ExamCreateFragment extends Fragment {
     private EditText examNameInput, questionCountInput;
     private Spinner classPicker;
     private TextView deadlinePicker;
-    private LinearLayout questionContainer;
+    private RecyclerView questionsRecyclerView;
+
     private Calendar selectedDeadline;
     private String selectedClass;
 
+    private QuestionAdapter questionAdapter;
+    private List<Question> questionsList = new ArrayList<>();
+
     private DatabaseReference databaseReference;
 
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_exam_create, container, false);
 
         // Initialize Firebase
         FirebaseApp.initializeApp(requireContext());
         databaseReference = FirebaseDatabase.getInstance().getReference("exams");
 
-        // UI element bindings
+        // Bind UI elements
         examNameInput = view.findViewById(R.id.examNameInput);
         questionCountInput = view.findViewById(R.id.questionCountInput);
         classPicker = view.findViewById(R.id.classPicker);
         deadlinePicker = view.findViewById(R.id.deadlinePicker);
-        questionContainer = view.findViewById(R.id.questionContainer);
+        questionsRecyclerView = view.findViewById(R.id.questionsRecyclerView);
 
         Button generateQuestionsButton = view.findViewById(R.id.generateQuestionsButton);
         Button createExamButton = view.findViewById(R.id.createExamButton);
 
         setupClassPicker();
         setupDeadlinePicker();
+
+        // Setup RecyclerView
+        questionsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        questionAdapter = new QuestionAdapter(questionsList);
+        questionsRecyclerView.setAdapter(questionAdapter);
 
         generateQuestionsButton.setOnClickListener(v -> {
             String countText = questionCountInput.getText().toString().trim();
@@ -71,7 +85,7 @@ public class ExamCreateFragment extends Fragment {
                 return;
             }
             int questionCount = Integer.parseInt(countText);
-            displayQuestions(questionCount);
+            populateQuestions(questionCount);
         });
 
         createExamButton.setOnClickListener(v -> createExam());
@@ -79,40 +93,12 @@ public class ExamCreateFragment extends Fragment {
         return view;
     }
 
-    private void displayQuestions(int count) {
-        questionContainer.removeAllViews();
-        for (int i = 1; i <= count; i++) {
-            TextView questionLabel = new TextView(getContext());
-            questionLabel.setText("Question " + i + ":");
-            questionLabel.setTextSize(18);
-
-            EditText questionInput = new EditText(getContext());
-            questionInput.setHint("Enter question " + i);
-            questionInput.setTextSize(16);
-
-            RadioGroup radioGroup = new RadioGroup(getContext());
-            radioGroup.setOrientation(RadioGroup.VERTICAL);
-
-            for (char option = 'A'; option <= 'D'; option++) {
-                EditText answerInput = new EditText(getContext());
-                answerInput.setHint(option + ". Enter answer");
-                answerInput.setTextSize(16);
-                questionContainer.addView(answerInput);
-            }
-
-            TextView correctAnswerLabel = new TextView(getContext());
-            correctAnswerLabel.setText("Enter the correct answer (A, B, C, D):");
-            correctAnswerLabel.setTextSize(16);
-
-            EditText correctAnswerInput = new EditText(getContext());
-            correctAnswerInput.setHint("Correct answer");
-            correctAnswerInput.setTextSize(16);
-
-            questionContainer.addView(questionLabel);
-            questionContainer.addView(questionInput);
-            questionContainer.addView(correctAnswerLabel);
-            questionContainer.addView(correctAnswerInput);
+    private void populateQuestions(int count) {
+        questionsList.clear();
+        for (int i = 0; i < count; i++) {
+            questionsList.add(new Question("Question " + (i + 1), new HashMap<>(), ""));
         }
+        questionAdapter.notifyDataSetChanged();
     }
 
     private void createExam() {
@@ -136,57 +122,18 @@ public class ExamCreateFragment extends Fragment {
             return;
         }
 
-        int questionCount = Integer.parseInt(questionCountText);
-        if (questionCount <= 0) {
-            Toast.makeText(getContext(), "Number of questions must be greater than zero", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Collect questions
         Map<String, Object> questions = new HashMap<>();
-        for (int i = 0; i < questionContainer.getChildCount(); i++) {
-            View view = questionContainer.getChildAt(i);
-
-            if (view instanceof EditText) {
-                String questionText = ((EditText) view).getText().toString().trim();
-                if (questionText.isEmpty()) {
-                    Toast.makeText(getContext(), "Please fill in all questions", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                Map<String, Object> questionData = new HashMap<>();
-                questionData.put("text", questionText);
-
-                // Collect answers and the correct answer
-                String correctAnswer = "";
-                Map<String, String> answers = new HashMap<>();
-                for (char option = 'A'; option <= 'D'; option++) {
-                    View answerView = questionContainer.getChildAt(i + 1);
-                    if (answerView instanceof EditText) {
-                        String answerText = ((EditText) answerView).getText().toString().trim();
-                        if (answerText.isEmpty()) {
-                            Toast.makeText(getContext(), "Please fill in all answers", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        answers.put(String.valueOf(option), answerText);
-                    }
-                    i++; // Move to the next answer view
-                }
-
-                questionData.put("answers", answers);
-                questionData.put("correctAnswer", correctAnswer);
-                questions.put("question" + (i + 1), questionData);
-            }
+        for (int i = 0; i < questionsList.size(); i++) {
+            Question question = questionsList.get(i);
+            questions.put("question" + (i + 1), question);
         }
 
-        // Create exam data
         Map<String, Object> examData = new HashMap<>();
         examData.put("name", examName);
         examData.put("class", selectedClass);
         examData.put("deadline", selectedDeadline.getTimeInMillis());
         examData.put("questions", questions);
 
-        // Save to Firebase
         String examId = databaseReference.push().getKey();
         if (examId == null) {
             Toast.makeText(getContext(), "Failed to create exam. Try again.", Toast.LENGTH_SHORT).show();
@@ -203,12 +150,12 @@ public class ExamCreateFragment extends Fragment {
                 });
     }
 
-
     private void clearForm() {
         examNameInput.setText("");
         questionCountInput.setText("");
         deadlinePicker.setText("Set Deadline");
-        questionContainer.removeAllViews();
+        questionsList.clear();
+        questionAdapter.notifyDataSetChanged();
         selectedDeadline = null;
     }
 
@@ -225,7 +172,8 @@ public class ExamCreateFragment extends Fragment {
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) { }
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
         });
     }
 
