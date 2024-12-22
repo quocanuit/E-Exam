@@ -16,7 +16,7 @@ import com.example.e_exam.user.UserFragment;
 public class StudentActivity extends AppCompatActivity {
 
     ActivityStudentBinding binding;
-
+    private String studentID;
     @SuppressLint("NonConstantResourceId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,14 +27,14 @@ public class StudentActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        replaceFragment(new StudentClassFragment());
+        studentID = getIntent().getStringExtra("studentId");
+        replaceFragment(new StudentClassFragment(studentID));
 
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
 
             if (itemId == R.id.classroom) {
-                replaceFragment(new StudentClassFragment());
+                replaceFragment(new StudentClassFragment(studentID));
             } else if (itemId == R.id.exam) {
                 replaceFragment(new StudentExamFragment());
             } else if (itemId == R.id.score) {

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Tên lớp học -->
+    <TextView
+        android:id="@+id/tvClassName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tên Lớp"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:paddingBottom="16dp"/>
+
+    <Button
+        android:id="@+id/btn_create_class"
+        android:layout_width="262dp"
+        android:layout_height="39dp"
+        android:layout_marginTop="36dp"
+        android:text="Danh sách học sinh"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    <!-- TableLayout cho danh sách sinh viên -->
+    <TableLayout
+        android:id="@+id/tableLayoutStudents"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:stretchColumns="1"
+        android:paddingBottom="16dp">
+
+        <!-- Cột tiêu đề -->
+        <TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Số Thứ Tự"
+                android:textStyle="bold"
+                android:paddingEnd="16dp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tên Sinh Viên"
+                android:textStyle="bold" />
+        </TableRow>
+
+        <!-- Các hàng sinh viên sẽ được thêm vào động -->
+    </TableLayout>
+</LinearLayout>

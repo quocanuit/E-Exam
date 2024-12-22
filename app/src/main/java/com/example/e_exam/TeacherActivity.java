@@ -17,6 +17,7 @@ import retrofit2.Retrofit;
 public class TeacherActivity extends AppCompatActivity {
 
     ActivityTeacherBinding binding;
+    private String teacherId; // Biến để lưu teacherId
     ArrayList<String> classList; // Danh sách tên lớp học
     ClassAdapter classAdapter; // Adapter cho RecyclerView
     RecyclerView recyclerView;
@@ -28,16 +29,20 @@ public class TeacherActivity extends AppCompatActivity {
         binding = ActivityTeacherBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        // Lấy teacherId từ Intent
+        teacherId = getIntent().getStringExtra("teacherId");
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        replaceFragment(new TeacherClassFragment());
+        // Gọi fragment TeacherClassFragment và truyền teacherId vào
+        replaceFragment(TeacherClassFragment.newInstance(teacherId)); // Truyền teacherId vào fragment
 
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
 
             if (itemId == R.id.classroom) {
-                replaceFragment(new TeacherClassFragment());
+                replaceFragment(TeacherClassFragment.newInstance(teacherId)); // Truyền teacherId khi chọn lớp học
             } else if (itemId == R.id.exam) {
                 replaceFragment(new TeacherExamFragment());
             } else if (itemId == R.id.user) {

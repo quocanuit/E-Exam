@@ -8,8 +8,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import android.view.MotionEvent;
-
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -36,30 +34,23 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
         holder.tvClassName.setText(className);
         holder.iconCourse.setImageResource(R.drawable.course); // Replace with your icon
 
-        // Đặt màu nền trắng ban đầu
+        // Đặt màu nền cho mục được chọn
         holder.itemView.setBackgroundColor(selectedPosition == position ? Color.parseColor("#E1BEE7") : Color.TRANSPARENT);
 
-        holder.itemView.setOnTouchListener((v, event) -> {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    // Khi nhấn xuống, thay đổi màu nền
-                    v.setBackgroundColor(Color.parseColor("#E1BEE7"));
-                    return true;
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    // Khi thả tay, quay về màu trắng ban đầu
-                    v.setBackgroundColor(Color.TRANSPARENT);
+        // Xử lý sự kiện khi nhấn vào mục trong RecyclerView
+        holder.itemView.setOnClickListener(v -> {
+            // Lưu lại vị trí được chọn
+            selectedPosition = position;
 
-                    // Xử lý sự kiện chuyển đến ClassActivity khi người dùng nhấn xong
-                    Intent intent = new Intent(holder.itemView.getContext(), ClassActivity.class);
-                    intent.putExtra("CLASS_NAME", className);
-                    holder.itemView.getContext().startActivity(intent);
-                    return true;
-            }
-            return false;
+            // Cập nhật màu nền
+            notifyDataSetChanged();
+
+            // Chuyển đến ClassActivity
+            Intent intent = new Intent(holder.itemView.getContext(), ClassActivity.class);
+            intent.putExtra("CLASS_NAME", className);
+            holder.itemView.getContext().startActivity(intent);
         });
     }
-
 
     @Override
     public int getItemCount() {
@@ -69,7 +60,6 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
     public static class ClassViewHolder extends RecyclerView.ViewHolder {
         TextView tvClassName;
         ImageView iconCourse;
-
 
         public ClassViewHolder(@NonNull View itemView) {
             super(itemView);
