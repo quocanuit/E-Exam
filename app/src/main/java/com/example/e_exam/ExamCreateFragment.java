@@ -29,6 +29,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -105,6 +106,7 @@ public class ExamCreateFragment extends Fragment {
         String examName = examNameInput.getText().toString().trim();
         String questionCountText = questionCountInput.getText().toString().trim();
 
+        // Basic validation checks
         if (examName.isEmpty()) {
             Toast.makeText(getContext(), "Please enter an exam name", Toast.LENGTH_SHORT).show();
             return;
@@ -122,18 +124,55 @@ public class ExamCreateFragment extends Fragment {
             return;
         }
 
-        Map<String, Object> questions = new HashMap<>();
+        // Validate questions
         for (int i = 0; i < questionsList.size(); i++) {
             Question question = questionsList.get(i);
-            questions.put("question" + (i + 1), question);
+
+            // Validate question text
+            if (question.getQuestionText() == null || question.getQuestionText().trim().isEmpty()) {
+                Toast.makeText(getContext(), "Please enter text for question " + (i + 1), Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Validate all answers are filled
+            Map<String, String> answers = question.getAnswers();
+            if (answers == null || answers.size() < 4 ||
+                    answers.get("A") == null || answers.get("A").trim().isEmpty() ||
+                    answers.get("B") == null || answers.get("B").trim().isEmpty() ||
+                    answers.get("C") == null || answers.get("C").trim().isEmpty() ||
+                    answers.get("D") == null || answers.get("D").trim().isEmpty()) {
+                Toast.makeText(getContext(), "Please fill in all answers for question " + (i + 1), Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Validate correct answer is selected
+            String correctAnswer = question.getCorrectAnswer();
+            if (correctAnswer == null || correctAnswer.trim().isEmpty() ||
+                    !Arrays.asList("A", "B", "C", "D").contains(correctAnswer)) {
+                Toast.makeText(getContext(), "Please select correct answer for question " + (i + 1), Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
 
+        // Prepare exam data
         Map<String, Object> examData = new HashMap<>();
         examData.put("name", examName);
         examData.put("class", selectedClass);
         examData.put("deadline", selectedDeadline.getTimeInMillis());
-        examData.put("questions", questions);
 
+        // Convert questions to map
+        Map<String, Object> questionsMap = new HashMap<>();
+        for (int i = 0; i < questionsList.size(); i++) {
+            Question question = questionsList.get(i);
+            Map<String, Object> questionData = new HashMap<>();
+            questionData.put("questionText", question.getQuestionText().trim());
+            questionData.put("answers", question.getAnswers());
+            questionData.put("correctAnswer", question.getCorrectAnswer());
+            questionsMap.put("question" + (i + 1), questionData);
+        }
+        examData.put("questions", questionsMap);
+
+        // Upload to Firebase
         String examId = databaseReference.push().getKey();
         if (examId == null) {
             Toast.makeText(getContext(), "Failed to create exam. Try again.", Toast.LENGTH_SHORT).show();

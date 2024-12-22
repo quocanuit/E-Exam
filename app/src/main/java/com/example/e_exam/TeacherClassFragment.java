@@ -67,15 +67,21 @@ public class TeacherClassFragment extends Fragment {
                 classList.clear();
                 for (DataSnapshot classSnapshot : dataSnapshot.getChildren()) {
                     String teacherIdInClass = classSnapshot.child("teacherId").getValue(String.class);
-                    if (teacherId.equals(teacherIdInClass)) {
+                    if (teacherId != null && teacherId.equals(teacherIdInClass)) {
                         String className = classSnapshot.child("className").getValue(String.class);
-                        classList.add(className);
+                        if (className != null) { // Check if className is not null before adding
+                            classList.add(className);
+                        }
                     }
                 }
 
-                // Cập nhật RecyclerView với dữ liệu lớp học
-                classAdapter = new ClassAdapter(classList);
-                recyclerView.setAdapter(classAdapter);
+                // Update RecyclerView with class data
+                if (classAdapter == null) {
+                    classAdapter = new ClassAdapter(classList);
+                    recyclerView.setAdapter(classAdapter);
+                } else {
+                    classAdapter.notifyDataSetChanged(); // Notify the adapter of data changes
+                }
             }
 
             @Override

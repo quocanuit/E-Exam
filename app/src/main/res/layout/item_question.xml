@@ -3,48 +3,137 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:padding="16dp"
+    android:background="@android:color/white"
+    android:layout_margin="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Câu "
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"/>
+
+        <EditText
+            android:id="@+id/questionText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:hint="Nhập câu hỏi"/>
+    </LinearLayout>
+
+    <RadioGroup
+        android:id="@+id/answersRadioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <RadioButton
+                android:id="@+id/radioA"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="A"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/answerA"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Đáp án A"
+                android:layout_marginStart="8dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <RadioButton
+                android:id="@+id/radioB"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="B"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+
+            <EditText
+                android:id="@+id/answerB"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Đáp án B"
+                android:layout_marginStart="8dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <RadioButton
+                android:id="@+id/radioC"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="C"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+
+            <EditText
+                android:id="@+id/answerC"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Đáp án C"
+                android:layout_marginStart="8dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <RadioButton
+                android:id="@+id/radioD"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="D"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+
+            <EditText
+                android:id="@+id/answerD"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Đáp án D"
+                android:layout_marginStart="8dp"/>
+        </LinearLayout>
+    </RadioGroup>
 
     <TextView
-        android:id="@+id/questionText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Question"
-        android:textSize="16sp"
-        android:layout_marginBottom="8dp" />
-
-    <EditText
-        android:id="@+id/answerA"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Answer A"
-        android:layout_marginBottom="4dp" />
+        android:text="(Vui lòng chọn đáp án đúng)"
+        android:textStyle="italic"
+        android:textSize="14sp"
+        android:layout_marginTop="8dp"
+        android:gravity="center"/>
 
-    <EditText
-        android:id="@+id/answerB"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Answer B"
-        android:layout_marginBottom="4dp" />
-
-    <EditText
-        android:id="@+id/answerC"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Answer C"
-        android:layout_marginBottom="4dp" />
-
-    <EditText
-        android:id="@+id/answerD"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Answer D"
-        android:layout_marginBottom="4dp" />
-
-    <EditText
-        android:id="@+id/correctAnswer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Correct Answer"
-        android:layout_marginBottom="8dp" />
 </LinearLayout>
