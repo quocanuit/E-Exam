@@ -97,7 +97,7 @@ public class ExamCreateFragment extends Fragment {
     private void populateQuestions(int count) {
         questionsList.clear();
         for (int i = 0; i < count; i++) {
-            questionsList.add(new Question("Question " + (i + 1), new HashMap<>(), ""));
+            questionsList.add(new Question("", new HashMap<>(), ""));
         }
         questionAdapter.notifyDataSetChanged();
     }

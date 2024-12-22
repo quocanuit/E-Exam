@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.e_exam.R;
 import com.example.e_exam.model.Question;
 
+import java.text.BreakIterator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -26,7 +28,6 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
         this.questions = questions;
     }
 
-    @NonNull
     @Override
     public QuestionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
@@ -37,6 +38,9 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
     @Override
     public void onBindViewHolder(@NonNull QuestionViewHolder holder, int position) {
         Question question = questions.get(position);
+
+        // Set question number
+        holder.questionNumber.setText("Câu " + (position + 1));
 
         // Initialize answers map if empty
         if (question.getAnswers() == null) {
@@ -58,7 +62,7 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
             }
         });
 
-        // Set up answers
+        // Rest of the binding code remains the same...
         setupAnswerEditText(holder.answerA, "A", question);
         setupAnswerEditText(holder.answerB, "B", question);
         setupAnswerEditText(holder.answerC, "C", question);
@@ -148,6 +152,7 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
     }
 
     public static class QuestionViewHolder extends RecyclerView.ViewHolder {
+        TextView questionNumber;
         EditText questionText;
         RadioGroup answersRadioGroup;
         RadioButton radioA, radioB, radioC, radioD;
@@ -155,6 +160,7 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
 
         public QuestionViewHolder(@NonNull View itemView) {
             super(itemView);
+            questionNumber = itemView.findViewById(R.id.questionNumber);
             questionText = itemView.findViewById(R.id.questionText);
             answersRadioGroup = itemView.findViewById(R.id.answersRadioGroup);
             radioA = itemView.findViewById(R.id.radioA);
