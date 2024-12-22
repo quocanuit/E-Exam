@@ -16,6 +16,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import android.util.Log;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -50,6 +51,10 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btn_register).setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, RegisterActivity.class));
         });
+        findViewById(R.id.AdminButton).setOnClickListener(v -> {
+            Log.d("MainActivity", "Test Admin Button clicked");
+           startActivity(new Intent(MainActivity.this, AdminActivityClass.class));
+        });
 
         findViewById(R.id.loginButton).setOnClickListener(v -> {
             loginUser(); // Logic đăng nhập
@@ -75,12 +80,17 @@ public class MainActivity extends AppCompatActivity {
                         String role = userSnapshot.child("role").getValue(String.class);
 
                         if ("Student".equals(role)) {
-                            startActivity(new Intent(MainActivity.this, StudentActivity.class));
+                            Intent intent = new Intent(MainActivity.this, StudentActivity.class);
+                            intent.putExtra("studentId", uid);
+                            startActivity(intent);
                         } else if ("Teacher".equals(role)) {
-                            startActivity(new Intent(MainActivity.this, TeacherActivity.class));
+                            // Truyền UID vào TeacherActivity
+                            Intent intent = new Intent(MainActivity.this, TeacherActivity.class);
+                            intent.putExtra("teacherId", uid);
+                            startActivity(intent);
                         } else if ("Admin".equals(role)) {
-                            startActivity(new Intent(MainActivity.this, AdminActivityClass.class));}
-                            else {
+                            startActivity(new Intent(MainActivity.this, AdminActivityClass.class));
+                        } else {
                             Toast.makeText(this, "Invalid role assigned", Toast.LENGTH_SHORT).show();
                         }
                     } else {
@@ -89,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
                 });
             } else {
                 Toast.makeText(this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                // Thiết lập sự kiện bấm cho nút Student Test
             }
         });
     }

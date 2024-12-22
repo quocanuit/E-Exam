@@ -18,14 +18,14 @@
             android:hint="Enter Exam Name"
             android:inputType="text"
             android:textSize="16sp"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp" />
 
         <!-- Spinner for class selection -->
         <Spinner
             android:id="@+id/classPicker"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp" />
 
         <!-- TextView to display selected deadline (placeholder for date/time picker) -->
         <TextView
@@ -39,7 +39,7 @@
             android:gravity="center_vertical"
             android:layout_marginBottom="16dp"
             android:clickable="true"
-            android:focusable="true"/>
+            android:focusable="true" />
 
         <!-- Button to upload PDF -->
         <Button
@@ -48,82 +48,34 @@
             android:layout_height="wrap_content"
             android:text="Upload PDF"
             android:padding="12dp"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="8dp" />
 
+        <!-- TextView to display PDF name after selection -->
         <TextView
+            android:id="@+id/pdfNameTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="1. What is the correct answer?"
-            android:textSize="18sp"
-            android:layout_marginBottom="8dp"/>
+            android:text="No PDF selected"
+            android:textSize="16sp"
+            android:padding="8dp"
+            android:layout_marginBottom="16dp" />
 
-        <RadioGroup
+        <!-- Dynamic container for questions -->
+        <LinearLayout
+            android:id="@+id/questionContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp" />
 
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="A"/>
-
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="B"/>
-
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="C"/>
-
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="D"/>
-        </RadioGroup>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="2. What is the correct answer?"
-            android:textSize="18sp"
-            android:layout_marginBottom="8dp"/>
-
-        <RadioGroup
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="A"/>
-
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="B"/>
-
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="C"/>
-
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="D"/>
-        </RadioGroup>
-
+        <!-- Button to create exam -->
         <Button
             android:id="@+id/createExamButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Create Exam"
             android:padding="12dp"
-            android:layout_marginTop="16dp"/>
+            android:layout_marginTop="16dp" />
 
     </LinearLayout>
-
 </ScrollView>
