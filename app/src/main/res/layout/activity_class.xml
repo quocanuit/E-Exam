@@ -17,9 +17,9 @@
         android:textSize="24sp"
         android:textColor="@android:color/black" />
 
-    <!-- CardView cho Tài liệu -->
+    <!-- CardView cho danh sách sinh viên của lớp đó -->
     <androidx.cardview.widget.CardView
-        android:id="@+id/card_document"
+        android:id="@+id/card_listStudent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/class_name_text_view"
@@ -35,19 +35,19 @@
             android:padding="16dp">
 
             <ImageView
-                android:id="@+id/image_document"
+                android:id="@+id/image_list"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:src="@drawable/documentation"
+                android:src="@drawable/liststudent"
                 android:layout_alignParentStart="true"/>
 
             <TextView
                 android:id="@+id/text_document"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/image_document"
+                android:layout_toEndOf="@id/image_list"
                 android:layout_marginStart="16dp"
-                android:text="Tài liệu"
+                android:text="Danh sách lớp"
                 android:textSize="18sp"
                 android:textColor="@android:color/black"/>
         </RelativeLayout>
@@ -58,7 +58,7 @@
         android:id="@+id/card_assignment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/card_document"
+        android:layout_below="@id/card_listStudent"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp"
         android:layout_centerHorizontal="true"
