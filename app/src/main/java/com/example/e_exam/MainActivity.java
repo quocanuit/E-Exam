@@ -13,6 +13,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -68,28 +69,39 @@ public class MainActivity extends AppCompatActivity {
 
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                String uid = mAuth.getCurrentUser().getUid();
-                databaseReference.child(uid).get().addOnCompleteListener(databaseTask -> {
-                    if (databaseTask.isSuccessful() && databaseTask.getResult().exists()) {
-                        DataSnapshot userSnapshot = databaseTask.getResult();
-                        String role = userSnapshot.child("role").getValue(String.class);
+                FirebaseUser user = mAuth.getCurrentUser();
+                if (user != null) {
+                    user.reload().addOnCompleteListener(reloadTask -> {
+                        if (reloadTask.isSuccessful() && user.isEmailVerified()) {
+                            String uid = user.getUid();
+                            databaseReference.child(uid).get().addOnCompleteListener(databaseTask -> {
+                                if (databaseTask.isSuccessful() && databaseTask.getResult().exists()) {
+                                    DataSnapshot userSnapshot = databaseTask.getResult();
+                                    String role = userSnapshot.child("role").getValue(String.class);
 
-                        if ("Student".equals(role)) {
-                            startActivity(new Intent(MainActivity.this, StudentActivity.class));
-                        } else if ("Teacher".equals(role)) {
-                            startActivity(new Intent(MainActivity.this, TeacherActivity.class));
-                        } else if ("Admin".equals(role)) {
-                            startActivity(new Intent(MainActivity.this, AdminActivityClass.class));}
-                            else {
-                            Toast.makeText(this, "Invalid role assigned", Toast.LENGTH_SHORT).show();
+                                    if ("Student".equals(role)) {
+                                        startActivity(new Intent(MainActivity.this, StudentActivity.class));
+                                    } else if ("Teacher".equals(role)) {
+                                        startActivity(new Intent(MainActivity.this, TeacherActivity.class));
+                                    } else if ("Admin".equals(role)) {
+                                        startActivity(new Intent(MainActivity.this, AdminActivityClass.class));
+                                    } else {
+                                        Toast.makeText(this, "Invalid role assigned", Toast.LENGTH_SHORT).show();
+                                    }
+                                } else {
+                                    Toast.makeText(this, "Failed to retrieve user data", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        } else if (user != null && !user.isEmailVerified()) {
+                            Toast.makeText(this, "Please verify your email before logging in.", Toast.LENGTH_LONG).show();
+                            mAuth.signOut();
+                        } else {
+                            Toast.makeText(this, "Failed to refresh user state.", Toast.LENGTH_SHORT).show();
                         }
-                    } else {
-                        Toast.makeText(this, "Failed to retrieve user data", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                    });
+                }
             } else {
                 Toast.makeText(this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                // Thiết lập sự kiện bấm cho nút Student Test
             }
         });
     }
