@@ -32,6 +32,7 @@ public class FragmentAdminClass extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        // Inflate layout
         View view = inflater.inflate(R.layout.fragment_teacher_class, container, false);
 
         // Khởi tạo Firebase Realtime Database
@@ -40,25 +41,37 @@ public class FragmentAdminClass extends Fragment {
         // Khởi tạo danh sách lớp học
         classList = new ArrayList<>();
 
-        // Khởi tạo RecyclerView
+        // Khởi tạo RecyclerView và ánh xạ đúng ID từ layout
         recyclerView = view.findViewById(R.id.recyclerView_classes);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        if (recyclerView == null) {
+            Log.e("FragmentAdminClass", "RecyclerView is null!");
+        } else {
+            // Thiết lập LayoutManager cho RecyclerView
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        }
+
+        // Khởi tạo Adapter và gắn nó vào RecyclerView
         classAdapter = new ClassAdapter(classList);
-        recyclerView.setAdapter(classAdapter);
+        if (recyclerView != null) {
+            recyclerView.setAdapter(classAdapter);
+        }
 
         // Xử lý sự kiện nhấn nút "Tạo lớp học"
         createClassButton = view.findViewById(R.id.btn_create_class);
         createClassButton.setOnClickListener(v -> showCreateClassDialog());
+
+        // Tải dữ liệu lớp học từ Firebase
         loadClasses();
-        return view;
+
+        return view; // Trả về view đã được inflate
     }
 
     private void loadClasses() {
-        // Lấy dữ liệu từ Firebase
+        // Lấy dữ liệu từ Firebase Realtime Database
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                classList.clear();  // Xóa danh sách cũ trước khi thêm mới
+                classList.clear(); // Xóa danh sách cũ trước khi thêm mới
 
                 // Duyệt qua các phần tử con trong "Classes"
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
@@ -69,11 +82,8 @@ public class FragmentAdminClass extends Fragment {
                     if (className != null && teacherName != null) {
                         // Thêm tên lớp học và tên giảng viên vào danh sách
                         classList.add("Class: " + className + "\nTeacher: " + teacherName);
-
-
                     }
                 }
-
 
                 // Cập nhật lại Adapter với dữ liệu mới
                 classAdapter.notifyDataSetChanged();
@@ -88,12 +98,13 @@ public class FragmentAdminClass extends Fragment {
     }
 
     private void showCreateClassDialog() {
-        // Tạo AlertDialog để nhập tên lớp học và tên giảng viên
+        // Hiển thị hộp thoại tạo lớp học mới
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_create_class, null);
 
         EditText editClassName = dialogView.findViewById(R.id.edit_class_name);
-        EditText editTeacherName = dialogView.findViewById(R.id.edit_teacher_name);  // Thêm EditText cho tên giảng viên
+        EditText editTeacherName = dialogView.findViewById(R.id.edit_teacher_name);
+        EditText editTeacherId = dialogView.findViewById(R.id.edit_teacher_id); // EditText cho mã giảng viên
         Button btnCreate = dialogView.findViewById(R.id.btn_create);
 
         builder.setView(dialogView);
@@ -101,43 +112,33 @@ public class FragmentAdminClass extends Fragment {
 
         btnCreate.setOnClickListener(v -> {
             String className = editClassName.getText().toString().trim();
-            String teacherName = editTeacherName.getText().toString().trim();  // Lấy tên giảng viên
+            String teacherName = editTeacherName.getText().toString().trim();
+            String teacherID = editTeacherId.getText().toString().trim(); // Lấy mã giảng viên
 
-            if (!className.isEmpty() && !teacherName.isEmpty()) {
-                // Tạo đối tượng Class với cả tên lớp và tên giảng viên
-                Class newClass = new Class(className, teacherName);
-
-                // Thêm đối tượng Class vào danh sách cục bộ
-                classList.add(String.valueOf(newClass));  // Thêm đối tượng mới vào danh sách
-                classAdapter.notifyItemInserted(classList.size() - 1); // Thông báo rằng một mục đã được chèn vào cuối
-
-                // Đẩy đối tượng Class lên Firebase Realtime Database
+            if (!className.isEmpty() && !teacherName.isEmpty() && !teacherID.isEmpty()) {
+                Class newClass = new Class(className, teacherName, teacherID);
                 databaseReference.push().setValue(newClass)
                         .addOnSuccessListener(aVoid -> {
-                            // Đã đẩy dữ liệu thành công
                             Log.d("Firebase", "Dữ liệu được đẩy lên thành công");
-                            dialog.dismiss(); // Đóng hộp thoại sau khi tạo lớp học thành công
+                            dialog.dismiss();
                         })
                         .addOnFailureListener(e -> {
-                            // In ra thông tin chi tiết lỗi khi đẩy dữ liệu thất bại
                             Log.e("Firebase", "Lỗi khi đẩy dữ liệu: " + e.getMessage());
-                            e.printStackTrace();  // In stack trace của lỗi
-
-                            // Hiển thị thông báo lỗi cho người dùng
                             editClassName.setError("Không thể lưu lớp học vào database!");
                         });
             } else {
-                // Hiển thị thông báo lỗi khi tên lớp học hoặc tên giảng viên bị trống
                 if (className.isEmpty()) {
                     editClassName.setError("Tên lớp không được để trống!");
                 }
                 if (teacherName.isEmpty()) {
                     editTeacherName.setError("Tên giảng viên không được để trống!");
                 }
+                if (teacherID.isEmpty()) {
+                    editTeacherId.setError("Mã giảng viên không được để trống!");
+                }
             }
         });
 
-        // Kiểm tra xem hộp thoại có được hiển thị
         dialog.show();
     }
 }
