@@ -10,6 +10,7 @@ import com.example.e_exam.databinding.ActivityRegisterBinding;
 import com.example.e_exam.user.User;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -47,7 +48,6 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     // Hàm đăng ký người dùng
-// Hàm đăng ký người dùng
     private void registerUser() {
         String email = binding.registerEmail.getText().toString().trim();
         String password = binding.registerPassword.getText().toString().trim();
@@ -100,8 +100,19 @@ public class RegisterActivity extends AppCompatActivity {
                         databaseReference.child(firebaseUID).setValue(user)
                                 .addOnCompleteListener(databaseTask -> {
                                     if (databaseTask.isSuccessful()) {
-                                        Toast.makeText(this, "Registration successful", Toast.LENGTH_SHORT).show();
-                                        finish();
+                                        // Gửi email xác minh
+                                        FirebaseUser firebaseUser = mAuth.getCurrentUser();
+                                        if (firebaseUser != null) {
+                                            firebaseUser.sendEmailVerification()
+                                                    .addOnCompleteListener(emailTask -> {
+                                                        if (emailTask.isSuccessful()) {
+                                                            Toast.makeText(this, "Registration successful. Please verify your email.", Toast.LENGTH_LONG).show();
+                                                            finish();
+                                                        } else {
+                                                            Toast.makeText(this, "Failed to send verification email: " + emailTask.getException().getMessage(), Toast.LENGTH_LONG).show();
+                                                        }
+                                                    });
+                                        }
                                     } else {
                                         Toast.makeText(this, "Failed to save user: " + databaseTask.getException().getMessage(), Toast.LENGTH_LONG).show();
                                     }
@@ -111,10 +122,6 @@ public class RegisterActivity extends AppCompatActivity {
                     }
                 });
     }
-
-
-
-
 
     @Override
     protected void onDestroy() {
