@@ -2,17 +2,16 @@ package com.example.e_exam;
 
 public class Class {
     private String className; // Tên lớp học
-    private String classId;   // Mã lớp học
-
+    private String teacherName;
     // Constructor không tham số (Firebase yêu cầu constructor mặc định)
     public Class() {
         // Constructor mặc định là cần thiết khi Firebase muốn tạo đối tượng từ dữ liệu JSON
     }
 
     // Constructor với tham số để khởi tạo tên và mã lớp học
-    public Class(String className, String classId) {
+    public Class(String className, String teacherName) {
         this.className = className;
-        this.classId = classId;
+        this.teacherName = teacherName;
     }
 
     // Getter và Setter cho className
@@ -25,11 +24,12 @@ public class Class {
     }
 
     // Getter và Setter cho classId
-    public String getClassId() {
-        return classId;
+
+    public String getTeacherName() {
+        return teacherName;
     }
 
-    public void setClassId(String classId) {
-        this.classId = classId;
+    public void setTeacherName(String teacherName) {
+        this.teacherName = teacherName;
     }
 }

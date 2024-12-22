@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.e_exam"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.e_exam"
@@ -30,6 +30,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        dataBinding = true
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -43,6 +44,7 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.retrofit2)
+    implementation(libs.firebase.auth)
     implementation(libs.retrofit2.converter.gson)
     implementation(libs.compose.theme.adapter)
     testImplementation(libs.junit)
