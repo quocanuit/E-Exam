@@ -7,6 +7,7 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.e_exam.databinding.ActivityRegisterBinding;
+import com.example.e_exam.user.User;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -46,10 +47,13 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     // Hàm đăng ký người dùng
+// Hàm đăng ký người dùng
     private void registerUser() {
         String email = binding.registerEmail.getText().toString().trim();
         String password = binding.registerPassword.getText().toString().trim();
         String confirmPassword = binding.registerConfirmPassword.getText().toString().trim();
+        String fullName = binding.fullNameInput.getText().toString().trim();
+        String birthday = binding.birthdayInput.getText().toString().trim();
 
         // Lấy vai trò từ RadioGroup
         int selectedRoleId = binding.roleRadioGroup.getCheckedRadioButtonId();
@@ -61,7 +65,8 @@ public class RegisterActivity extends AppCompatActivity {
         String role = selectedRoleButton.getText().toString();
 
         // Kiểm tra xem các trường có rỗng không
-        if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+        if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() ||
+                role.isEmpty() || birthday.isEmpty() || fullName.isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -76,12 +81,23 @@ public class RegisterActivity extends AppCompatActivity {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        // Lấy UID của người dùng vừa đăng ký
-                        String uid = mAuth.getCurrentUser().getUid();
+                        // Lấy UID do Firebase tạo ra
+                        String firebaseUID = mAuth.getCurrentUser().getUid();
+
+                        // Tạo UID tùy chỉnh (role_Ten_ddmm)
+                        String[] nameParts = fullName.split(" ");
+                        String shortName = nameParts[nameParts.length - 1]; // Lấy tên cuối cùng
+                        String shortBirthday = birthday.replace("/", "").substring(0, 4); // ddmm
+                        String customUID = role.equalsIgnoreCase("teacher") ? "gv_" :
+                                role.equalsIgnoreCase("student") ? "sv_" :
+                                        role.equalsIgnoreCase("admin") ? "ad_" : "";
+                        customUID += shortName + "_" + shortBirthday;
+
+                        // Tạo đối tượng User
+                        User user = new User(customUID, fullName, birthday, email, role);
 
                         // Lưu thông tin người dùng vào Realtime Database
-                        com.example.e_exam.User user = new com.example.e_exam.User(uid, email, role);
-                        databaseReference.child(uid).setValue(user)
+                        databaseReference.child(firebaseUID).setValue(user)
                                 .addOnCompleteListener(databaseTask -> {
                                     if (databaseTask.isSuccessful()) {
                                         Toast.makeText(this, "Registration successful", Toast.LENGTH_SHORT).show();
@@ -95,6 +111,10 @@ public class RegisterActivity extends AppCompatActivity {
                     }
                 });
     }
+
+
+
+
 
     @Override
     protected void onDestroy() {

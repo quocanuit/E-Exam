@@ -43,13 +43,10 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        findViewById(R.id.teacherTestButton).setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, TeacherActivity.class));
+        findViewById(R.id.btn_forget_password).setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, ForgetPass.class));
         });
 
-        findViewById(R.id.studentTestButton).setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, StudentActivity.class));
-        });
 
         findViewById(R.id.btn_register).setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, RegisterActivity.class));
