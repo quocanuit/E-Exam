@@ -2,7 +2,6 @@ package com.example.e_exam;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -43,10 +42,22 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        // Kiểm tra trạng thái đăng nhập
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            currentUser.reload().addOnCompleteListener(task -> {
+                if (task.isSuccessful() && currentUser.isEmailVerified()) {
+                    navigateToRoleActivity();
+                } else if (currentUser != null && !currentUser.isEmailVerified()) {
+                    Toast.makeText(this, "Please verify your email.", Toast.LENGTH_LONG).show();
+                    mAuth.signOut();
+                }
+            });
+        }
+
         findViewById(R.id.btn_forget_password).setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, ForgetPass.class));
         });
-
 
         findViewById(R.id.btn_register).setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, RegisterActivity.class));
@@ -55,7 +66,6 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.loginButton).setOnClickListener(v -> {
             loginUser(); // Logic đăng nhập
         });
-
     }
 
     private void loginUser() {
@@ -73,25 +83,7 @@ public class MainActivity extends AppCompatActivity {
                 if (user != null) {
                     user.reload().addOnCompleteListener(reloadTask -> {
                         if (reloadTask.isSuccessful() && user.isEmailVerified()) {
-                            String uid = user.getUid();
-                            databaseReference.child(uid).get().addOnCompleteListener(databaseTask -> {
-                                if (databaseTask.isSuccessful() && databaseTask.getResult().exists()) {
-                                    DataSnapshot userSnapshot = databaseTask.getResult();
-                                    String role = userSnapshot.child("role").getValue(String.class);
-
-                                    if ("Student".equals(role)) {
-                                        startActivity(new Intent(MainActivity.this, StudentActivity.class));
-                                    } else if ("Teacher".equals(role)) {
-                                        startActivity(new Intent(MainActivity.this, TeacherActivity.class));
-                                    } else if ("Admin".equals(role)) {
-                                        startActivity(new Intent(MainActivity.this, AdminActivityClass.class));
-                                    } else {
-                                        Toast.makeText(this, "Invalid role assigned", Toast.LENGTH_SHORT).show();
-                                    }
-                                } else {
-                                    Toast.makeText(this, "Failed to retrieve user data", Toast.LENGTH_SHORT).show();
-                                }
-                            });
+                            navigateToRoleActivity();
                         } else if (user != null && !user.isEmailVerified()) {
                             Toast.makeText(this, "Please verify your email before logging in.", Toast.LENGTH_LONG).show();
                             mAuth.signOut();
@@ -102,6 +94,32 @@ public class MainActivity extends AppCompatActivity {
                 }
             } else {
                 Toast.makeText(this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void navigateToRoleActivity() {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) return;
+
+        String uid = currentUser.getUid();
+        databaseReference.child(uid).get().addOnCompleteListener(databaseTask -> {
+            if (databaseTask.isSuccessful() && databaseTask.getResult().exists()) {
+                DataSnapshot userSnapshot = databaseTask.getResult();
+                String role = userSnapshot.child("role").getValue(String.class);
+
+                if ("Student".equals(role)) {
+                    startActivity(new Intent(MainActivity.this, StudentActivity.class));
+                } else if ("Teacher".equals(role)) {
+                    startActivity(new Intent(MainActivity.this, TeacherActivity.class));
+                } else if ("Admin".equals(role)) {
+                    startActivity(new Intent(MainActivity.this, AdminActivityClass.class));
+                } else {
+                    Toast.makeText(this, "Invalid role assigned", Toast.LENGTH_SHORT).show();
+                }
+                finish();
+            } else {
+                Toast.makeText(this, "Failed to retrieve user data", Toast.LENGTH_SHORT).show();
             }
         });
     }
