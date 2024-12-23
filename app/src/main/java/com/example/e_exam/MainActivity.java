@@ -16,6 +16,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import android.util.Log;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -62,6 +63,10 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btn_register).setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, RegisterActivity.class));
         });
+        findViewById(R.id.AdminButton).setOnClickListener(v -> {
+            Log.d("MainActivity", "Test Admin Button clicked");
+           startActivity(new Intent(MainActivity.this, AdminActivityClass.class));
+        });
 
         findViewById(R.id.loginButton).setOnClickListener(v -> {
             loginUser(); // Logic đăng nhập
@@ -89,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
                             mAuth.signOut();
                         } else {
                             Toast.makeText(this, "Failed to refresh user state.", Toast.LENGTH_SHORT).show();
+              
                         }
                     });
                 }
