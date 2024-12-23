@@ -2,6 +2,7 @@ package com.example.e_exam;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -16,7 +17,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import android.util.Log;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -64,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(MainActivity.this, RegisterActivity.class));
         });
 
-
         findViewById(R.id.loginButton).setOnClickListener(v -> {
             loginUser(); // Logic đăng nhập
         });
@@ -91,7 +90,6 @@ public class MainActivity extends AppCompatActivity {
                             mAuth.signOut();
                         } else {
                             Toast.makeText(this, "Failed to refresh user state.", Toast.LENGTH_SHORT).show();
-              
                         }
                     });
                 }

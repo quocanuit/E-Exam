@@ -8,6 +8,7 @@ public class User {
     private String role;
     private String UniClass;
 
+    public User(){};
     public User(String uid, String fullName, String birthday, String email, String role, String UniClass) {
         this.uid = uid;
         this.fullName = fullName;

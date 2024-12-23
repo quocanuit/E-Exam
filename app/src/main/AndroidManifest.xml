@@ -38,9 +38,7 @@
         <activity
             android:name=".ForgetPass"
             android:exported="false" />
-        <activity
-            android:name=".ActivityDocument"
-            android:exported="false" />
+
         <activity
             android:name=".ListStudentActivity"
             android:exported="false" />
