@@ -16,7 +16,11 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:queryHint="Tìm kiếm theo tên lớp" />
+        app:queryHint="Tìm kiếm theo tên lớp"
+        android:iconifiedByDefault="false"
+        android:focusable="true"
+        android:focusableInTouchMode="true" />
+
     <TextView
         android:id="@+id/tat_ca"
         android:layout_width="wrap_content"

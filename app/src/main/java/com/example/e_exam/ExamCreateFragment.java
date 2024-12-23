@@ -1,93 +1,252 @@
 package com.example.e_exam;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.Fragment;
+
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class ExamCreateFragment extends Fragment {
 
+    private static final String TAG = "ExamCreate";
+
     private EditText examNameInput;
     private Spinner classPicker;
-    private TextView deadlinePicker;
-    private Button createExamButton;
-    private String selectedClass;
+    private TextView deadlinePicker, pdfNameTextView;
+    private LinearLayout questionContainer;
+    private Uri pdfUri;
     private Calendar selectedDeadline;
+    private String selectedClass;
+
+    private StorageReference storageReference;
+    private DatabaseReference databaseReference;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_exam_create, container, false);
 
+        // Initialize Firebase
+        FirebaseApp.initializeApp(requireContext());
+        storageReference = FirebaseStorage.getInstance().getReference("exams");
+        databaseReference = FirebaseDatabase.getInstance().getReference("exams");
+
+        // UI element bindings
         examNameInput = view.findViewById(R.id.examNameInput);
         classPicker = view.findViewById(R.id.classPicker);
         deadlinePicker = view.findViewById(R.id.deadlinePicker);
-        createExamButton = view.findViewById(R.id.createExamButton);
+        pdfNameTextView = view.findViewById(R.id.pdfNameTextView);
+        questionContainer = view.findViewById(R.id.questionContainer);
 
-        // Set up the class picker with mock class names
+        Button createExamButton = view.findViewById(R.id.createExamButton);
+        Button uploadPdfButton = view.findViewById(R.id.uploadPdfButton);
+
         setupClassPicker();
-
-        // Set up the deadline picker
         setupDeadlinePicker();
 
-        // Button listener for exam creation
-        createExamButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String examName = examNameInput.getText().toString();
-                if (examName.isEmpty()) {
-                    Toast.makeText(getContext(), "Please enter an exam name", Toast.LENGTH_SHORT).show();
-                } else if (selectedDeadline == null) {
-                    Toast.makeText(getContext(), "Please set a deadline", Toast.LENGTH_SHORT).show();
-                } else {
-                    // Simulating exam creation with mock data
-                    String deadlineString = String.format("%02d-%02d-%d %02d:%02d",
-                            selectedDeadline.get(Calendar.DAY_OF_MONTH),
-                            selectedDeadline.get(Calendar.MONTH) + 1,
-                            selectedDeadline.get(Calendar.YEAR),
-                            selectedDeadline.get(Calendar.HOUR_OF_DAY),
-                            selectedDeadline.get(Calendar.MINUTE));
-
-                    Toast.makeText(getContext(), "Exam Created: " + examName
-                                    + "\nClass: " + selectedClass
-                                    + "\nDeadline: " + deadlineString,
-                            Toast.LENGTH_LONG).show();
-                }
-            }
-        });
+        uploadPdfButton.setOnClickListener(v -> pickPdfFile());
+        createExamButton.setOnClickListener(v -> createExam());
 
         return view;
     }
 
+    private void pickPdfFile() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("application/pdf");
+        pdfPickerLauncher.launch(intent);
+    }
+
+    private final ActivityResultLauncher<Intent> pdfPickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    pdfUri = result.getData().getData();
+                    if (pdfUri != null) {
+                        String fileName = getFileNameFromUri(pdfUri);
+                        pdfNameTextView.setText("Selected PDF: " + fileName);
+                        promptForQuestionCount();
+                    }
+                }
+            }
+    );
+
+    @SuppressLint("Range")
+    private String getFileNameFromUri(Uri uri) {
+        String result = null;
+        if (Objects.equals(uri.getScheme(), "content")) {
+            try (Cursor cursor = requireContext().getContentResolver().query(uri, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            }
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = Objects.requireNonNull(result).lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
+    }
+
+    private void promptForQuestionCount() {
+        EditText input = new EditText(getContext());
+        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        new android.app.AlertDialog.Builder(getContext())
+                .setTitle("Enter Number of Questions")
+                .setView(input)
+                .setPositiveButton("OK", (dialog, which) -> {
+                    int questionCount;
+                    try {
+                        questionCount = Integer.parseInt(input.getText().toString());
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(getContext(), "Invalid number", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    displayQuestions(questionCount);
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
+
+    private void displayQuestions(int count) {
+        questionContainer.removeAllViews();
+        for (int i = 1; i <= count; i++) {
+            TextView questionLabel = new TextView(getContext());
+            questionLabel.setText(i + ". What is the correct answer?");
+            questionLabel.setTextSize(18);
+
+            RadioGroup radioGroup = new RadioGroup(getContext());
+            radioGroup.setOrientation(RadioGroup.VERTICAL);
+
+            for (char option = 'A'; option <= 'D'; option++) {
+                RadioButton radioButton = new RadioButton(getContext());
+                radioButton.setText(String.valueOf(option));
+                radioGroup.addView(radioButton);
+            }
+
+            questionContainer.addView(questionLabel);
+            questionContainer.addView(radioGroup);
+        }
+    }
+
+    private void createExam() {
+        String examName = examNameInput.getText().toString().trim();
+        if (examName.isEmpty()) {
+            Toast.makeText(getContext(), "Please enter an exam name", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (pdfUri == null) {
+            Toast.makeText(getContext(), "Please upload a PDF file", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (selectedDeadline == null) {
+            Toast.makeText(getContext(), "Please set a deadline", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        StorageReference fileRef = storageReference.child(examName + ".pdf");
+        fileRef.putFile(pdfUri)
+                .addOnSuccessListener(taskSnapshot -> fileRef.getDownloadUrl().addOnSuccessListener(uri -> saveExamToDatabase(uri.toString())))
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "PDF Upload Failed", e);
+                    Toast.makeText(getContext(), "Failed to upload PDF: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+    }
+
+    private void saveExamToDatabase(String pdfUrl) {
+        String examName = examNameInput.getText().toString().trim();
+
+        Map<String, String> answers = new HashMap<>();
+        for (int i = 0; i < questionContainer.getChildCount(); i += 2) {
+            RadioGroup radioGroup = (RadioGroup) questionContainer.getChildAt(i + 1);
+            int selectedId = radioGroup.getCheckedRadioButtonId();
+            if (selectedId == -1) {
+                Toast.makeText(getContext(), "Please answer all questions", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            RadioButton selectedRadioButton = radioGroup.findViewById(selectedId);
+            answers.put("Question " + ((i / 2) + 1), selectedRadioButton.getText().toString());
+        }
+
+        Map<String, Object> examData = new HashMap<>();
+        examData.put("name", examName);
+        examData.put("class", selectedClass);
+        examData.put("deadline", selectedDeadline.getTimeInMillis());
+        examData.put("pdfUrl", pdfUrl);
+        examData.put("answers", answers);
+
+        String examId = databaseReference.push().getKey();
+        if (examId == null) {
+            Log.e(TAG, "Failed to generate exam ID");
+            return;
+        }
+
+        databaseReference.child(examId).setValue(examData)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(getContext(), "Exam created successfully!", Toast.LENGTH_SHORT).show();
+                    clearForm();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Database write failed", e);
+                    Toast.makeText(getContext(), "Failed to save exam: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+    }
+
+    private void clearForm() {
+        examNameInput.setText("");
+        deadlinePicker.setText("Set Deadline");
+        pdfNameTextView.setText("No PDF selected");
+        questionContainer.removeAllViews();
+        pdfUri = null;
+        selectedDeadline = null;
+    }
+
     private void setupClassPicker() {
-        // Mock list of class names
         List<String> classList = new ArrayList<>();
         classList.add("NT531");
         classList.add("NT533");
         classList.add("NT131");
         classList.add("NT118");
 
-        // Create an ArrayAdapter for the spinner
-        ArrayAdapter<String> classAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, classList);
-        classAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        classPicker.setAdapter(classAdapter);
-
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, classList);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        classPicker.setAdapter(adapter);
         classPicker.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -95,39 +254,32 @@ public class ExamCreateFragment extends Fragment {
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                // Do nothing
-            }
+            public void onNothingSelected(AdapterView<?> parent) { }
         });
     }
 
     private void setupDeadlinePicker() {
-        deadlinePicker.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final Calendar currentDate = Calendar.getInstance();
-                selectedDeadline = Calendar.getInstance();
+        deadlinePicker.setOnClickListener(v -> {
+            Calendar currentDate = Calendar.getInstance();
+            selectedDeadline = Calendar.getInstance();
 
-                // Show Date Picker
-                new DatePickerDialog(getContext(), new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                        selectedDeadline.set(year, month, dayOfMonth);
+            new DatePickerDialog(requireContext(), (view, year, month, dayOfMonth) -> {
+                selectedDeadline.set(Calendar.YEAR, year);
+                selectedDeadline.set(Calendar.MONTH, month);
+                selectedDeadline.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
-                        // Show Time Picker after setting the date
-                        new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
-                            @Override
-                            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                                selectedDeadline.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                                selectedDeadline.set(Calendar.MINUTE, minute);
+                new TimePickerDialog(requireContext(), (timeView, hourOfDay, minute) -> {
+                    selectedDeadline.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                    selectedDeadline.set(Calendar.MINUTE, minute);
 
-                                // Display the selected deadline
-                                deadlinePicker.setText(String.format("%d-%02d-%02d %02d:%02d", year, month + 1, dayOfMonth, hourOfDay, minute));
-                            }
-                        }, currentDate.get(Calendar.HOUR_OF_DAY), currentDate.get(Calendar.MINUTE), true).show();
-                    }
-                }, currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DAY_OF_MONTH)).show();
-            }
+                    // Display the selected deadline in the TextView
+                    @SuppressLint("DefaultLocale")
+                    String deadlineText = String.format("%02d/%02d/%d %02d:%02d",
+                            dayOfMonth, month + 1, year, hourOfDay, minute);
+                    deadlinePicker.setText(deadlineText);
+                }, currentDate.get(Calendar.HOUR_OF_DAY), currentDate.get(Calendar.MINUTE), true).show();
+
+            }, currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DAY_OF_MONTH)).show();
         });
     }
 }

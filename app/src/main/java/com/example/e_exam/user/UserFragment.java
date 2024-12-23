@@ -13,6 +13,7 @@ import android.os.Bundle;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -28,6 +29,11 @@ import com.bumptech.glide.Glide;
 import com.example.e_exam.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import android.Manifest;
 import android.widget.Toast;
@@ -45,6 +51,7 @@ public class UserFragment extends Fragment {
     private TextView tvName, tvID, tvEmail, tvBirthday, tvClass, tvHometown;
     private Button btnChangePassword;
     private CircleImageView btnAvatar;
+    private DatabaseReference databaseReference;
 
     // Khai báo ActivityResultLauncher
     private ActivityResultLauncher<String> requestPermissionLauncher;
@@ -57,8 +64,54 @@ public class UserFragment extends Fragment {
         setupActivityLaunchers();
         initUI();
         initListener();
-        showUserInformation();
+        setupFirebase();
+        loadUserProfile();
         return view;
+    }
+
+    private void setupFirebase() {
+        databaseReference = FirebaseDatabase.getInstance().getReference("users");
+    }
+
+    private void loadUserProfile() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) return;
+
+        databaseReference.child(currentUser.getUid())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            User user = snapshot.getValue(User.class);
+                            if (user != null) {
+                                updateUI(user);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(getContext(),
+                                "Error loading profile: " + error.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void updateUI(User user) {
+        tvName.setText(user.getFullName());
+        //tvID.setText(user.get);
+        tvEmail.setText(user.getEmail());
+        tvBirthday.setText(user.getBirthday());
+
+        // Hiển thị ảnh đại diện nếu có
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null && firebaseUser.getPhotoUrl() != null) {
+            Glide.with(this)
+                    .load(firebaseUser.getPhotoUrl())
+                    .error(R.drawable.student)
+                    .into(btnAvatar);
+        }
     }
 
     private void setupActivityLaunchers() {
@@ -123,21 +176,6 @@ public class UserFragment extends Fragment {
                 .replace(R.id.frame_layout, changePasswordFragment)
                 .addToBackStack(null)
                 .commit();
-    }
-
-    private void showUserInformation() {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) return;
-
-        String name = user.getDisplayName();
-        tvName.setVisibility(name != null ? View.VISIBLE : View.GONE);
-        if (name != null) tvName.setText(name);
-
-        tvEmail.setText(user.getEmail());
-        Glide.with(this)
-                .load(user.getPhotoUrl())
-                .error(R.drawable.student)
-                .into(btnAvatar);
     }
 
     private void checkAndRequestPermission() {

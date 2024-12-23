@@ -7,6 +7,8 @@ public class User {
     private String email;
     private String role;
 
+    public User() {}
+
     public User(String uid, String fullName, String birthday, String email, String role) {
         this.uid = uid;
         this.fullName = fullName;
