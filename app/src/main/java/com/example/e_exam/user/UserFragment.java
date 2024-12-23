@@ -100,9 +100,10 @@ public class UserFragment extends Fragment {
 
     private void updateUI(User user) {
         tvName.setText(user.getFullName());
-        //tvID.setText(user.get);
+        //tvID.setText(user.getEmail());
         tvEmail.setText(user.getEmail());
         tvBirthday.setText(user.getBirthday());
+        tvName.setText(user.getFullName());
 
         // Hiển thị ảnh đại diện nếu có
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
