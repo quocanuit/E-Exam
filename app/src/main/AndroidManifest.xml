@@ -21,10 +21,10 @@
             android:name=".RegisterActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".StudentActivity"
             android:exported="false" />
         <activity
-            android:name=".StudentActivity"
+            android:name=".TeacherActivity"
             android:exported="false" />
         <activity
             android:name=".ClassActivity"
@@ -38,11 +38,12 @@
         <activity
             android:name=".ForgetPass"
             android:exported="false" />
+
         <activity
             android:name=".ListStudentActivity"
             android:exported="false" />
         <activity
-            android:name=".TeacherActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

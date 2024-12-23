@@ -54,6 +54,7 @@ public class RegisterActivity extends AppCompatActivity {
         String confirmPassword = binding.registerConfirmPassword.getText().toString().trim();
         String fullName = binding.fullNameInput.getText().toString().trim();
         String birthday = binding.birthdayInput.getText().toString().trim();
+        String uniclass = binding.uniClassInput.getText().toString().trim();
 
         // Lấy vai trò từ RadioGroup
         int selectedRoleId = binding.roleRadioGroup.getCheckedRadioButtonId();
@@ -94,7 +95,7 @@ public class RegisterActivity extends AppCompatActivity {
                         customUID += shortName + "_" + shortBirthday;
 
                         // Tạo đối tượng User
-                        User user = new User(customUID, fullName, birthday, email, role);
+                        User user = new User(customUID, fullName, birthday, email, role, uniclass);
 
                         // Lưu thông tin người dùng vào Realtime Database
                         databaseReference.child(firebaseUID).setValue(user)
