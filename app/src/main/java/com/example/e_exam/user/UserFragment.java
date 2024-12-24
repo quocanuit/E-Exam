@@ -26,6 +26,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.example.e_exam.MainActivity;
 import com.example.e_exam.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -49,7 +50,7 @@ public class UserFragment extends Fragment {
 
     private View view;
     private TextView tvName, tvID, tvEmail, tvBirthday, tvClass, tvHometown;
-    private Button btnChangePassword;
+    private Button btnChangePassword, btnLogout;
     private CircleImageView btnAvatar;
     private DatabaseReference databaseReference;
 
@@ -100,10 +101,10 @@ public class UserFragment extends Fragment {
 
     private void updateUI(User user) {
         tvName.setText(user.getFullName());
-        //tvID.setText(user.getEmail());
+        tvID.setText(user.getUid());
         tvEmail.setText(user.getEmail());
         tvBirthday.setText(user.getBirthday());
-        tvName.setText(user.getFullName());
+//        tvClass.setText(user.getClass());
 
         // Hiển thị ảnh đại diện nếu có
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -163,11 +164,21 @@ public class UserFragment extends Fragment {
         tvHometown = view.findViewById(R.id.tv_Hometown);
         btnChangePassword = view.findViewById(R.id.btn_ChangePassword);
         btnAvatar = view.findViewById(R.id.btn_Avatar);
+        btnLogout = view.findViewById(R.id.btn_Logout);
     }
 
     private void initListener() {
         btnChangePassword.setOnClickListener(v -> navigateToChangePassword());
         btnAvatar.setOnClickListener(v -> checkAndRequestPermission());
+        btnLogout.setOnClickListener(v -> logout());
+    }
+
+    private void logout() {
+        FirebaseAuth.getInstance().signOut();
+        Intent loginIntent = new Intent(getActivity(), MainActivity.class);
+        loginIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(loginIntent);
+        requireActivity().finish();
     }
 
     private void navigateToChangePassword() {
