@@ -60,6 +60,8 @@ public class TeacherClassFragment extends Fragment {
         classList = new ArrayList<>();
         databaseReference = FirebaseDatabase.getInstance().getReference("Classes");
 
+
+
         // Truy vấn các lớp học mà giáo viên dạy
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -69,7 +71,10 @@ public class TeacherClassFragment extends Fragment {
                     String teacherIdInClass = classSnapshot.child("teacherId").getValue(String.class);
                     if (teacherId != null && teacherId.equals(teacherIdInClass)) {
                         String className = classSnapshot.child("className").getValue(String.class);
-                        if (className != null) { // Check if className is not null before adding
+
+                        if (className != null) {
+
+
                             classList.add(className);
                         }
                     }

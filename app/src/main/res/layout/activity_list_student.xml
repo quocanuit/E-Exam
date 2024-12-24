@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
@@ -16,22 +15,23 @@
         android:textStyle="bold"
         android:paddingBottom="16dp"/>
 
+    <!-- Button Danh sách học sinh -->
     <Button
         android:id="@+id/btn_create_class"
-        android:layout_width="262dp"
-        android:layout_height="39dp"
-        android:layout_marginTop="36dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:text="Danh sách học sinh"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_marginTop="16dp"
+    />
+
     <!-- TableLayout cho danh sách sinh viên -->
     <TableLayout
         android:id="@+id/tableLayoutStudents"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:stretchColumns="1"
-        android:paddingBottom="16dp">
+        android:paddingBottom="16dp"
+        android:layout_marginTop="24dp"> <!-- Tạo khoảng cách giữa button và table layout -->
 
         <!-- Cột tiêu đề -->
         <TableRow>
@@ -44,7 +44,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tên Sinh Viên"
+                android:text="Tên học sinh"
                 android:textStyle="bold" />
         </TableRow>
 
