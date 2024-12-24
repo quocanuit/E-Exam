@@ -1,5 +1,7 @@
 package com.example.e_exam.user;
 
+import static com.example.e_exam.MainActivity.mAuth;
+
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -57,7 +59,15 @@ public class ChangePasswordFragment extends Fragment {
             return;
         }
 
-        updatePassword(newPassword);
+        String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+        mAuth.signInWithEmailAndPassword(email, oldPassword).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                updatePassword(newPassword);
+            }
+            else {
+                showAlertDialog("Thông báo", "Mật khẩu cũ không đúng");
+            }
+        });
     }
 
     private boolean validateInputs(String oldPassword, String newPassword, String confirmPassword) {
@@ -110,10 +120,10 @@ public class ChangePasswordFragment extends Fragment {
                 .addOnCompleteListener(task -> {
                     progressDialog.dismiss();
                     if (task.isSuccessful()) {
-                        showToast("Password updated successfully");
+                        showAlertDialog("Notification", "Password updated successfully");
                         navigateBack();
                     } else {
-                        showToast("Failed to update password: " +
+                        showAlertDialog("Failed to update password: ",
                                 (task.getException() != null ?
                                         task.getException().getMessage() : "Unknown error"));
                     }

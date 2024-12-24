@@ -46,7 +46,7 @@ public class StudentClassFragment extends Fragment implements ClassAdapterStuden
 
         dsLop.setLayoutManager(new LinearLayoutManager(getContext()));
         classList = new ArrayList<>();
-        classAdapter = new ClassAdapterStudent(classList, getContext(), this);
+        classAdapter = new ClassAdapterStudent(classList, getContext(), this, studentId);
         dsLop.setAdapter(classAdapter);
 
         // Firebase reference

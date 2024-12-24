@@ -10,7 +10,6 @@ import android.widget.TextView;
 import com.example.e_exam.model.Questions;
 import com.example.e_exam.R;
 
-
 import java.util.List;
 
 public class ExamListResultAdapter extends ArrayAdapter<Questions> {
