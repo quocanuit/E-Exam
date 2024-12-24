@@ -1,5 +1,6 @@
 package com.example.e_exam;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
 
     private ArrayList<String> classList;
     private int selectedPosition = RecyclerView.NO_POSITION;
+    private OnItemLongClickListener longClickListener;
 
     public ClassAdapter(ArrayList<String> classList) {
         this.classList = classList;
@@ -39,7 +41,7 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
 
         // Xử lý sự kiện khi nhấn vào mục trong RecyclerView
         holder.itemView.setOnClickListener(v -> {
-            // Lưu lại vị trí được chọn
+              // Lưu lại vị trí được chọn
             selectedPosition = position;
 
             // Cập nhật màu nền
@@ -50,11 +52,23 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
             intent.putExtra("CLASS_NAME", className);
             holder.itemView.getContext().startActivity(intent);
         });
+
+        // Xử lý sự kiện khi nhấn giữ lâu vào mục trong RecyclerView
+        holder.itemView.setOnLongClickListener(v -> {
+            if (longClickListener != null) {
+                longClickListener.onItemLongClick(className);
+            }
+            return true;
+        });
     }
 
     @Override
     public int getItemCount() {
         return classList.size();
+    }
+
+    public void setOnItemLongClickListener(OnItemLongClickListener longClickListener) {
+        this.longClickListener = longClickListener;
     }
 
     public static class ClassViewHolder extends RecyclerView.ViewHolder {
@@ -66,5 +80,9 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
             tvClassName = itemView.findViewById(R.id.tvClassName);
             iconCourse = itemView.findViewById(R.id.icon_course);
         }
+    }
+
+    public interface OnItemLongClickListener {
+        void onItemLongClick(String className);
     }
 }
