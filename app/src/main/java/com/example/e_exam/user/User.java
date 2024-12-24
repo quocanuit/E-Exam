@@ -6,18 +6,26 @@ public class User {
     private String birthday;
     private String email;
     private String role;
+    private String UniClass;
 
-    public User() {}
-
-    public User(String uid, String fullName, String birthday, String email, String role) {
+    public User(){};
+    public User(String uid, String fullName, String birthday, String email, String role, String UniClass) {
         this.uid = uid;
         this.fullName = fullName;
         this.birthday = birthday;
         this.email = email;
         this.role = role;
+        this.UniClass = UniClass;
     }
 
     // Getters và setters
+    public String getUniClass() {
+        return UniClass;
+    }
+    public void setUniClass(String uniClass) {
+        UniClass = uniClass;
+    }
+
     public String getUid() {
         return uid;
     }

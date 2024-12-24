@@ -49,7 +49,7 @@ public class UserFragment extends Fragment {
     private static final int PERMISSION_REQUEST_CODE = 10;
 
     private View view;
-    private TextView tvName, tvID, tvEmail, tvBirthday, tvClass, tvHometown;
+    private TextView tvName, tvID, tvEmail, tvBirthday;
     private Button btnChangePassword, btnLogout;
     private CircleImageView btnAvatar;
     private DatabaseReference databaseReference;
@@ -104,7 +104,7 @@ public class UserFragment extends Fragment {
         tvID.setText(user.getUid());
         tvEmail.setText(user.getEmail());
         tvBirthday.setText(user.getBirthday());
-//        tvClass.setText(user.getClass());
+
 
         // Hiển thị ảnh đại diện nếu có
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -160,8 +160,7 @@ public class UserFragment extends Fragment {
         tvID = view.findViewById(R.id.tv_ID);
         tvEmail = view.findViewById(R.id.tv_Email);
         tvBirthday = view.findViewById(R.id.tv_Birthday);
-        tvClass = view.findViewById(R.id.tv_Class);
-        tvHometown = view.findViewById(R.id.tv_Hometown);
+
         btnChangePassword = view.findViewById(R.id.btn_ChangePassword);
         btnAvatar = view.findViewById(R.id.btn_Avatar);
         btnLogout = view.findViewById(R.id.btn_Logout);

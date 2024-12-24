@@ -1,7 +1,6 @@
 package com.example.e_exam.user;
 
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,19 +9,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-
+import androidx.appcompat.app.AlertDialog;
 
 import com.example.e_exam.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
-import java.util.ArrayList;
-
-import javax.annotation.Nullable;
 
 public class ChangePasswordFragment extends Fragment {
     private static final int MIN_PASSWORD_LENGTH = 6;
@@ -70,26 +62,40 @@ public class ChangePasswordFragment extends Fragment {
 
     private boolean validateInputs(String oldPassword, String newPassword, String confirmPassword) {
         if (oldPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
-            showToast("Please fill in all fields");
+            showAlertDialog("Thông báo", "Vui lòng điền đầy đủ thông tin");
             return false;
         }
 
         if (newPassword.length() < MIN_PASSWORD_LENGTH) {
-            showToast("New password must be at least " + MIN_PASSWORD_LENGTH + " characters");
+            showAlertDialog("Thông báo", "Mật khẩu mới phải có ít nhất " + MIN_PASSWORD_LENGTH + " ký tự");
             return false;
         }
 
         if (!newPassword.equals(confirmPassword)) {
-            showToast("New passwords don't match");
+            showAlertDialog("Thông báo", "Mật khẩu mới không khớp");
             return false;
         }
 
         if (newPassword.equals(oldPassword)) {
-            showToast("New password must be different from old password");
+            showAlertDialog("Thông báo", "Mật khẩu mới phải khác mật khẩu cũ");
             return false;
         }
 
         return true;
+    }
+
+    private void showAlertDialog(String title, String message) {
+        if (getContext() == null) return;
+
+        new AlertDialog.Builder(getContext())
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .setCancelable(false)
+                .create()
+                .show();
     }
 
     private void updatePassword(String newPassword) {
