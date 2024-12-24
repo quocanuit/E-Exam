@@ -2,23 +2,23 @@ package com.example.e_exam;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.util.Log;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -33,7 +33,7 @@ public class FragmentAdminClass extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Inflate layout
-        View view = inflater.inflate(R.layout.fragment_teacher_class, container, false);
+        View view = inflater.inflate(R.layout.fragment_admin_class, container, false);
 
         // Khởi tạo Firebase Realtime Database
         databaseReference = FirebaseDatabase.getInstance().getReference("Classes");
@@ -50,7 +50,7 @@ public class FragmentAdminClass extends Fragment {
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         }
 
-        // Khởi tạo Adapter và gắn nó vào RecyclerView
+          // Khởi tạo Adapter và gắn nó vào RecyclerView
         classAdapter = new ClassAdapter(classList);
         if (recyclerView != null) {
             recyclerView.setAdapter(classAdapter);
@@ -59,6 +59,9 @@ public class FragmentAdminClass extends Fragment {
         // Xử lý sự kiện nhấn nút "Tạo lớp học"
         createClassButton = view.findViewById(R.id.btn_create_class);
         createClassButton.setOnClickListener(v -> showCreateClassDialog());
+
+        // Xử lý sự kiện nhấn giữ lâu vào item lớp học
+        classAdapter.setOnItemLongClickListener(this::showDeleteClassDialog);
 
         // Tải dữ liệu lớp học từ Firebase
         loadClasses();
@@ -75,13 +78,12 @@ public class FragmentAdminClass extends Fragment {
 
                 // Duyệt qua các phần tử con trong "Classes"
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    // Lấy giá trị của "className" và "teacherName" từ mỗi phần tử
+                    // Lấy giá trị của "className" từ mỗi phần tử
                     String className = snapshot.child("className").getValue(String.class);
-                    String teacherName = snapshot.child("teacherName").getValue(String.class);
 
-                    if (className != null && teacherName != null) {
-                        // Thêm tên lớp học và tên giảng viên vào danh sách
-                        classList.add("Class: " + className + "\nTeacher: " + teacherName);
+                    if (className != null) {
+                        // Thêm tên lớp học vào danh sách
+                        classList.add(className);
                     }
                 }
 
@@ -96,6 +98,8 @@ public class FragmentAdminClass extends Fragment {
             }
         });
     }
+
+
 
     private void showCreateClassDialog() {
         // Hiển thị hộp thoại tạo lớp học mới
@@ -139,6 +143,58 @@ public class FragmentAdminClass extends Fragment {
             }
         });
 
+        dialog.show();
+    }
+
+    private void showDeleteClassDialog(String className) {
+        // Hiển thị hộp thoại xác nhận xóa lớp học
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Xóa Lớp Học");
+        builder.setMessage("Bạn có chắc chắn muốn xóa lớp học " + className + " không?");
+
+        builder.setPositiveButton("Xóa", (dialog, which) -> {
+            // Tìm và xóa lớp học khỏi Firebase Realtime Database
+            databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    // Duyệt qua các phần tử con trong "Classes"
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        // 1. Kiểm tra nhánh có trường "className" trùng với className
+                        if (snapshot.hasChild("className")) {
+                            String classNameInNode = snapshot.child("className").getValue(String.class);
+                            if (classNameInNode != null && classNameInNode.equals(className)) {
+                                snapshot.getRef().removeValue(); // Xóa nhánh có className trùng với className
+                            }
+                        }
+
+                        // 2. Kiểm tra nhánh có tên trùng với className (tên nhánh cấp 1 dưới "Classes")
+                        String key = snapshot.getKey();
+                        if (key != null && key.equals(className)) {
+                            // Xóa nhánh có tên nhánh trùng với className
+                            snapshot.getRef().removeValue();
+
+                            // 3. Xóa các nhánh con trực tiếp dưới nhánh có tên className
+                            DataSnapshot studentsSnapshot = snapshot.child("students");
+                            for (DataSnapshot studentSnapshot : studentsSnapshot.getChildren()) {
+                                // Xóa từng sinh viên con dưới "students"
+                                studentSnapshot.getRef().removeValue();
+                            }
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    // Xử lý lỗi nếu có sự cố khi xóa dữ liệu
+                    Log.e("Firebase", "Lỗi khi xóa dữ liệu: " + databaseError.getMessage());
+                }
+            });
+        });
+
+
+        builder.setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());
+
+        AlertDialog dialog = builder.create();
         dialog.show();
     }
 }

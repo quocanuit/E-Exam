@@ -2,8 +2,6 @@ package com.example.e_exam;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -11,12 +9,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-
+import android.widget.EditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import android.util.Log;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,7 +27,6 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        // Firebase Auth và Database Reference
         mAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference("users");
 
@@ -47,19 +43,13 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(MainActivity.this, ForgetPass.class));
         });
 
-
         findViewById(R.id.btn_register).setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, RegisterActivity.class));
-        });
-        findViewById(R.id.AdminButton).setOnClickListener(v -> {
-            Log.d("MainActivity", "Test Admin Button clicked");
-           startActivity(new Intent(MainActivity.this, AdminActivityClass.class));
         });
 
         findViewById(R.id.loginButton).setOnClickListener(v -> {
             loginUser(); // Logic đăng nhập
         });
-
     }
 
     private void loginUser() {
@@ -73,20 +63,20 @@ public class MainActivity extends AppCompatActivity {
 
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                String uid = mAuth.getCurrentUser().getUid();
-                databaseReference.child(uid).get().addOnCompleteListener(databaseTask -> {
+                String firebaseUID = mAuth.getCurrentUser().getUid();
+                databaseReference.child(firebaseUID).get().addOnCompleteListener(databaseTask -> {
                     if (databaseTask.isSuccessful() && databaseTask.getResult().exists()) {
                         DataSnapshot userSnapshot = databaseTask.getResult();
+                        String customUID = userSnapshot.child("uid").getValue(String.class);
                         String role = userSnapshot.child("role").getValue(String.class);
 
                         if ("Student".equals(role)) {
                             Intent intent = new Intent(MainActivity.this, StudentActivity.class);
-                            intent.putExtra("studentId", uid);
+                            intent.putExtra("studentId", customUID);
                             startActivity(intent);
                         } else if ("Teacher".equals(role)) {
-                            // Truyền UID vào TeacherActivity
                             Intent intent = new Intent(MainActivity.this, TeacherActivity.class);
-                            intent.putExtra("teacherId", uid);
+                            intent.putExtra("teacherId", customUID);
                             startActivity(intent);
                         } else if ("Admin".equals(role)) {
                             startActivity(new Intent(MainActivity.this, AdminActivityClass.class));
