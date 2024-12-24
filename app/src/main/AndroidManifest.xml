@@ -30,7 +30,16 @@
             android:name=".ClassActivity"
             android:exported="false" />
         <activity
+            android:name=".ActivityClassStudent"
+            android:exported="false" />
+        <activity
             android:name=".StudentGradeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ClassStudent"
+            android:exported="false" />
+        <activity
+            android:name=".AddExam"
             android:exported="false" />
         <activity
             android:name=".AdminActivityClass"
