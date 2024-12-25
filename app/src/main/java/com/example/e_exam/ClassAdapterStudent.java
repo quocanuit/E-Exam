@@ -54,45 +54,49 @@ public class ClassAdapterStudent extends RecyclerView.Adapter<ClassAdapterStuden
         holder.iconCourse.setImageResource(R.drawable.course);
 
         holder.itemView.setOnClickListener(v -> {
-            // Kiểm tra xem sinh viên đã tham gia lớp này chưa
-            DatabaseReference classRef = FirebaseDatabase.getInstance().getReference("Classes").child(className).child("students").child(studentId);
-            classRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    if (snapshot.exists()) {
-                        // Nếu sinh viên đã tham gia lớp, chuyển đến ClassStudent
-                        Intent intent = new Intent(context, ClassStudent.class);
-                        intent.putExtra("className", className);
-                        context.startActivity(intent);
-                    } else {
-                        // Nếu sinh viên chưa tham gia lớp, hiển thị dialog
-                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                        builder.setTitle("Bạn có muốn tham gia lớp này không?");
-                        builder.setMessage("Nhập tên của bạn:");
-                        // Thêm EditText để nhập tên sinh viên
-                        final EditText input = new EditText(context);
-                        builder.setView(input);
+            if (className != null && !className.isEmpty() && studentId != null && !studentId.isEmpty()) {
+                // Kiểm tra xem sinh viên đã tham gia lớp này chưa
+                DatabaseReference classRef = FirebaseDatabase.getInstance().getReference("Classes").child(className).child("students").child(studentId);
+                classRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            // Nếu sinh viên đã tham gia lớp, chuyển đến ClassStudent
+                            Intent intent = new Intent(context, ClassStudent.class);
+                            intent.putExtra("className", className);
+                            context.startActivity(intent);
+                        } else {
+                            // Nếu sinh viên chưa tham gia lớp, hiển thị dialog
+                            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                            builder.setTitle("Bạn có muốn tham gia lớp này không?");
+                            builder.setMessage("Nhập tên của bạn:");
+                            // Thêm EditText để nhập tên sinh viên
+                            final EditText input = new EditText(context);
+                            builder.setView(input);
 
-                        builder.setPositiveButton("OK", (dialog, which) -> {
-                            String studentName = input.getText().toString().trim();
-                            if (!studentName.isEmpty()) {
-                                listener.onClassJoin(className, studentName);
-                            } else {
-                                Toast.makeText(context, "Student name cannot be empty", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                            builder.setPositiveButton("OK", (dialog, which) -> {
+                                String studentName = input.getText().toString().trim();
+                                if (!studentName.isEmpty()) {
+                                    listener.onClassJoin(className, studentName);
+                                } else {
+                                    Toast.makeText(context, "Student name cannot be empty", Toast.LENGTH_SHORT).show();
+                                }
+                            });
 
-                        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+                            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
 
-                        builder.show();
+                            builder.show();
+                        }
                     }
-                }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-                    Toast.makeText(context, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(context, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                Toast.makeText(context, "Class name or student ID is invalid.", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 

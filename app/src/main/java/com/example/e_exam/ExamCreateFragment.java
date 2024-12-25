@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,8 +25,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.e_exam.adapter.QuestionAdapter;
 import com.example.e_exam.model.Question;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +41,7 @@ import java.util.Map;
 public class ExamCreateFragment extends Fragment {
 
     private static final String TAG = "ExamCreate";
-
+    private String teacherId;
     private EditText examNameInput, questionCountInput;
     private Spinner classPicker;
     private TextView deadlinePicker;
@@ -51,11 +55,21 @@ public class ExamCreateFragment extends Fragment {
 
     private DatabaseReference databaseReference;
 
+    public static ExamCreateFragment newInstance(String teacherId) {
+        ExamCreateFragment fragment = new ExamCreateFragment();
+        Bundle args = new Bundle();
+        args.putString("teacherId", teacherId);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_exam_create, container, false);
-
+        if (getArguments() != null) {
+            teacherId = getArguments().getString("teacherId");
+        }
         // Initialize Firebase
         FirebaseApp.initializeApp(requireContext());
         databaseReference = FirebaseDatabase.getInstance().getReference("exams");
@@ -198,19 +212,53 @@ public class ExamCreateFragment extends Fragment {
     }
 
     private void setupClassPicker() {
-        List<String> classList = List.of("NT531", "NT533", "NT131", "NT118");
+        List<String> classList = new ArrayList<>();
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, classList);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        classPicker.setAdapter(adapter);
-        classPicker.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        // Get reference to "Classes" node in Firebase
+        DatabaseReference classesRef = FirebaseDatabase.getInstance().getReference("Classes");
+
+        // Add Listener to retrieve data
+        classesRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selectedClass = parent.getItemAtPosition(position).toString();
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                // Iterate through all classes
+                for (DataSnapshot classSnapshot : dataSnapshot.getChildren()) {
+                    // Get teacherId of the current class
+                    String teacherIdInClass = classSnapshot.child("teacherId").getValue(String.class);
+
+                    // Check if teacherId matches
+                    if (teacherIdInClass != null && teacherIdInClass.equals(teacherId)) {
+                        // Get class name
+                        String className = classSnapshot.child("className").getValue(String.class);
+                        if (className != null) {
+                            // Add class name to classList
+                            classList.add(className);
+                        }
+                    }
+                }
+
+                // After retrieving data, update the Spinner's Adapter
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, classList);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                classPicker.setAdapter(adapter);
+                classPicker.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        selectedClass = parent.getItemAtPosition(position).toString();
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+                        selectedClass = null;
+                    }
+                });
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                // Handle potential errors
+                Log.e(TAG, "Failed to load classes from Firebase: " + databaseError.getMessage());
+                Toast.makeText(requireContext(), "Failed to load classes. Please try again.", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -218,24 +266,26 @@ public class ExamCreateFragment extends Fragment {
     private void setupDeadlinePicker() {
         deadlinePicker.setOnClickListener(v -> {
             Calendar currentDate = Calendar.getInstance();
-            selectedDeadline = Calendar.getInstance();
+            int year = currentDate.get(Calendar.YEAR);
+            int month = currentDate.get(Calendar.MONTH);
+            int day = currentDate.get(Calendar.DAY_OF_MONTH);
 
-            new DatePickerDialog(requireContext(), (view, year, month, dayOfMonth) -> {
-                selectedDeadline.set(Calendar.YEAR, year);
-                selectedDeadline.set(Calendar.MONTH, month);
-                selectedDeadline.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+            DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(), (view, selectedYear, selectedMonth, selectedDay) -> {
+                int hour = currentDate.get(Calendar.HOUR_OF_DAY);
+                int minute = currentDate.get(Calendar.MINUTE);
 
-                new TimePickerDialog(requireContext(), (timeView, hourOfDay, minute) -> {
-                    selectedDeadline.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                    selectedDeadline.set(Calendar.MINUTE, minute);
+                TimePickerDialog timePickerDialog = new TimePickerDialog(requireContext(), (timeView, selectedHour, selectedMinute) -> {
+                    selectedDeadline = Calendar.getInstance();
+                    selectedDeadline.set(selectedYear, selectedMonth, selectedDay, selectedHour, selectedMinute);
+                    @SuppressLint("DefaultLocale") String formattedDeadline = String.format("%02d/%02d/%04d %02d:%02d",
+                            selectedDay, selectedMonth + 1, selectedYear, selectedHour, selectedMinute);
+                    deadlinePicker.setText(formattedDeadline);
+                }, hour, minute, true);
 
-                    @SuppressLint("DefaultLocale")
-                    String deadlineText = String.format("%02d/%02d/%d %02d:%02d",
-                            dayOfMonth, month + 1, year, hourOfDay, minute);
-                    deadlinePicker.setText(deadlineText);
-                }, currentDate.get(Calendar.HOUR_OF_DAY), currentDate.get(Calendar.MINUTE), true).show();
+                timePickerDialog.show();
+            }, year, month, day);
 
-            }, currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DAY_OF_MONTH)).show();
+            datePickerDialog.show();
         });
     }
 }

@@ -34,6 +34,9 @@
             android:name=".ClassActivity"
             android:exported="false" />
         <activity
+            android:name=".ExamStart"
+            android:exported="false" />
+        <activity
             android:name=".ActivityClassStudent"
             android:exported="false" />
         <activity

@@ -19,15 +19,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TeacherExamFragment extends Fragment {
+    private String teacherId;
     private RecyclerView recyclerView;
     private TeacherExamListAdapter adapter;
     private List<TeacherExamList> examList;
     private int currentDisplayedItems = 0;
     private static final int ITEMS_PER_PAGE = 20;
 
+    public static TeacherExamFragment newInstance(String teacherId) {
+        TeacherExamFragment fragment = new TeacherExamFragment();
+        Bundle args = new Bundle();
+        args.putString("teacherId", teacherId);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_teacher_exam, container, false);
+
+        if (getArguments() != null) {
+            teacherId = getArguments().getString("teacherId");
+        }
 
         // Find the button
         Button createExamButton = view.findViewById(R.id.createExamButton);  // Button id from XML
@@ -39,7 +52,7 @@ public class TeacherExamFragment extends Fragment {
                 // Perform fragment transaction to navigate to ExamCreateFragment
                 assert getFragmentManager() != null;
                 FragmentTransaction transaction = getFragmentManager().beginTransaction();
-                transaction.replace(R.id.frame_layout, new ExamCreateFragment());  // Replace with new fragment
+                transaction.replace(R.id.frame_layout, ExamCreateFragment.newInstance(teacherId));  // Replace with new fragment
                 transaction.addToBackStack(null);  // Allow user to navigate back to TeacherExamFragment
                 transaction.commit();
             }
@@ -110,4 +123,3 @@ public class TeacherExamFragment extends Fragment {
         }
     }
 }
-

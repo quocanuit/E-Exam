@@ -1,5 +1,7 @@
 package com.example.e_exam;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -37,7 +39,7 @@ public class ExamStudent extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         examList = new ArrayList<>();
-        examAdapter = new ExamAdapter(examList);
+        examAdapter = new ExamAdapter(examList, this);
         recyclerView.setAdapter(examAdapter);
 
         // Nhận giá trị className từ Intent
@@ -85,9 +87,11 @@ public class ExamStudent extends AppCompatActivity {
 
     private class ExamAdapter extends RecyclerView.Adapter<ExamViewHolder> {
         private List<Exam> examList;
+        private Context context;
 
-        ExamAdapter(List<Exam> examList) {
+        ExamAdapter(List<Exam> examList, Context context) {
             this.examList = examList;
+            this.context = context;
         }
 
         @NonNull
@@ -101,6 +105,13 @@ public class ExamStudent extends AppCompatActivity {
         public void onBindViewHolder(@NonNull ExamViewHolder holder, int position) {
             Exam exam = examList.get(position);
             holder.examName.setText(exam.name);
+
+            holder.itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(context, ExamStart.class);
+                intent.putExtra("CLASS_NAME", className);
+                intent.putExtra("EXAM_NAME", exam.name);
+                context.startActivity(intent);
+            });
         }
 
         @Override

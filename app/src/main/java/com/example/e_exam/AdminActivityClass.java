@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import com.example.e_exam.databinding.ActivityTeacherBinding;
 import com.example.e_exam.databinding.ActivityAdminBinding;
+import com.example.e_exam.user.UserFragment;
 
 public class AdminActivityClass extends AppCompatActivity {
 
@@ -32,10 +33,9 @@ public class AdminActivityClass extends AppCompatActivity {
 
             if (itemId == R.id.classroom) {
                 replaceFragment(new FragmentAdminClass());
-            } else if (itemId == R.id.exam) {
-                replaceFragment(new TeacherListFragment());
+
             } else if (itemId == R.id.user) {
-                replaceFragment(new StudentListFragment());
+                replaceFragment(new UserFragment());
             }
 
             return true;

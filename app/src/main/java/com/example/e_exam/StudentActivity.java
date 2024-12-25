@@ -27,7 +27,7 @@ public class StudentActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        studentID = getIntent().getStringExtra("studentId");
+        studentID = getIntent().getStringExtra("Customuid");
         replaceFragment(new StudentClassFragment(studentID));
 
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
