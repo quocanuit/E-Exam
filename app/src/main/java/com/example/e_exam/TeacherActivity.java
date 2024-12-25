@@ -30,13 +30,14 @@ public class TeacherActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         // Lấy teacherId từ Intent
-        teacherId = getIntent().getStringExtra("teacherId");
+        teacherId = getIntent().getStringExtra("Customuid");
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // Gọi fragment TeacherClassFragment và truyền teacherId vào
-        replaceFragment(TeacherClassFragment.newInstance(teacherId)); // Truyền teacherId vào fragment
+        replaceFragment(TeacherClassFragment.newInstance(teacherId));
+        replaceFragment(TeacherExamFragment.newInstance(teacherId));// Truyền teacherId vào fragment
 
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
@@ -44,7 +45,7 @@ public class TeacherActivity extends AppCompatActivity {
             if (itemId == R.id.classroom) {
                 replaceFragment(TeacherClassFragment.newInstance(teacherId)); // Truyền teacherId khi chọn lớp học
             } else if (itemId == R.id.exam) {
-                replaceFragment(new TeacherExamFragment());
+                replaceFragment(TeacherExamFragment.newInstance(teacherId));
             } else if (itemId == R.id.user) {
                 replaceFragment(new UserFragment());
             }

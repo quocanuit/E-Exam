@@ -6,11 +6,7 @@
         android:title="Tạo Lớp"
         android:icon="@drawable/baseline_school_24"/>
     <item
-        android:id="@+id/exam"
-        android:title="Danh sách giáo viên"
-        android:icon="@drawable/teacher"/>
-    <item
         android:id="@+id/user"
-        android:title="Danh sách học sinh"
-        android:icon="@drawable/student"/>
+        android:title="Cá nhân"
+        android:icon="@drawable/baseline_person_24"/>
 </menu>
