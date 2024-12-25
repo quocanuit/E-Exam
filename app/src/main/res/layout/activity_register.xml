@@ -75,6 +75,17 @@
             android:padding="12dp" />
 
         <EditText
+            android:id="@+id/uniClassInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/edittext_background"
+            android:drawablePadding="8dp"
+            android:hint="Class"
+            android:inputType="text"
+            android:padding="12dp" />
+
+        <EditText
             android:id="@+id/birthdayInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -115,7 +126,7 @@
         <Button
             android:id="@+id/registerButton"
             android:layout_width="match_parent"
-            android:layout_height="98dp"
+            android:layout_height="50dp"
             android:layout_marginBottom="16dp"
             android:backgroundTint="#6B44C8"
             android:padding="12dp"

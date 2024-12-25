@@ -1,3 +1,4 @@
+
 package com.example.e_exam;
 
 import android.os.Bundle;
@@ -45,7 +46,7 @@ public class StudentClassFragment extends Fragment implements ClassAdapterStuden
 
         dsLop.setLayoutManager(new LinearLayoutManager(getContext()));
         classList = new ArrayList<>();
-        classAdapter = new ClassAdapterStudent(classList, getContext(), this, studentId); // Truyền studentId vào
+        classAdapter = new ClassAdapterStudent(classList, getContext(), this, studentId);
         dsLop.setAdapter(classAdapter);
 
         // Firebase reference
