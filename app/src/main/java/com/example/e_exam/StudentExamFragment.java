@@ -43,10 +43,13 @@ public class StudentExamFragment extends Fragment implements StudentExamListAdap
 
     @Override
     public void onExamClick(StudentExamList exam) {
+        String fileUri = exam.getFileUri(); // Lấy URI file từ item (cần thêm field này trong model StudentExamList)
+
         ExamDetailFragment detailFragment = ExamDetailFragment.newInstance(
                 exam.getClassName(),
                 exam.getName(),
-                exam.getDueDate()
+                exam.getDueDate(),
+                fileUri
         );
 
         requireActivity().getSupportFragmentManager()
@@ -55,6 +58,7 @@ public class StudentExamFragment extends Fragment implements StudentExamListAdap
                 .addToBackStack(null)
                 .commit();
     }
+
 
     private void setupScrollListener() {
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {

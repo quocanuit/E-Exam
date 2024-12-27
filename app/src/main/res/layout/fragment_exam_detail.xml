@@ -122,6 +122,12 @@
                     android:text="D"/>
             </RadioGroup>
         </LinearLayout>
+        <Button
+            android:id="@+id/pickFileButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Chọn tệp PDF"
+            android:layout_marginTop="16dp"/>
 
         <!-- Submit button -->
         <Button
