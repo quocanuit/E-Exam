@@ -50,7 +50,7 @@ public class FragmentAdminClass extends Fragment {
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         }
 
-          // Khởi tạo Adapter và gắn nó vào RecyclerView
+        // Khởi tạo Adapter và gắn nó vào RecyclerView
         classAdapter = new ClassAdapter(classList);
         if (recyclerView != null) {
             recyclerView.setAdapter(classAdapter);
@@ -69,46 +69,13 @@ public class FragmentAdminClass extends Fragment {
         return view; // Trả về view đã được inflate
     }
 
-    private void loadClasses() {
-        // Lấy dữ liệu từ Firebase Realtime Database
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                classList.clear(); // Xóa danh sách cũ trước khi thêm mới
-
-                // Duyệt qua các phần tử con trong "Classes"
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    // Lấy giá trị của "className" từ mỗi phần tử
-                    String className = snapshot.child("className").getValue(String.class);
-
-                    if (className != null) {
-                        // Thêm tên lớp học vào danh sách
-                        classList.add(className);
-                    }
-                }
-
-                // Cập nhật lại Adapter với dữ liệu mới
-                classAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                // Hiển thị lỗi nếu có sự cố khi truy vấn dữ liệu
-                Log.e("Firebase", "Lỗi khi lấy dữ liệu: " + databaseError.getMessage());
-            }
-        });
-    }
-
-
-
     private void showCreateClassDialog() {
-        // Hiển thị hộp thoại tạo lớp học mới
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_create_class, null);
 
         EditText editClassName = dialogView.findViewById(R.id.edit_class_name);
         EditText editTeacherName = dialogView.findViewById(R.id.edit_teacher_name);
-        EditText editTeacherId = dialogView.findViewById(R.id.edit_teacher_id); // EditText cho mã giảng viên
+        EditText editTeacherId = dialogView.findViewById(R.id.edit_teacher_id);
         Button btnCreate = dialogView.findViewById(R.id.btn_create);
 
         builder.setView(dialogView);
@@ -117,11 +84,14 @@ public class FragmentAdminClass extends Fragment {
         btnCreate.setOnClickListener(v -> {
             String className = editClassName.getText().toString().trim();
             String teacherName = editTeacherName.getText().toString().trim();
-            String teacherID = editTeacherId.getText().toString().trim(); // Lấy mã giảng viên
+            String teacherID = editTeacherId.getText().toString().trim();
 
             if (!className.isEmpty() && !teacherName.isEmpty() && !teacherID.isEmpty()) {
+                // Create a HashMap to store class data
                 Class newClass = new Class(className, teacherName, teacherID);
-                databaseReference.push().setValue(newClass)
+
+                // Store the class directly under its name instead of using push()
+                databaseReference.child(className).setValue(newClass)
                         .addOnSuccessListener(aVoid -> {
                             Log.d("Firebase", "Dữ liệu được đẩy lên thành công");
                             dialog.dismiss();
@@ -144,6 +114,30 @@ public class FragmentAdminClass extends Fragment {
         });
 
         dialog.show();
+    }
+
+    private void loadClasses() {
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                classList.clear();
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    // Get the class name from the key
+                    String className = snapshot.getKey();
+                    if (className != null) {
+                        classList.add(className);
+                    }
+                }
+
+                classAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("Firebase", "Lỗi khi lấy dữ liệu: " + databaseError.getMessage());
+            }
+        });
     }
 
     private void showDeleteClassDialog(String className) {

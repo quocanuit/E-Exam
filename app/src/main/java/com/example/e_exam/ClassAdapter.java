@@ -1,5 +1,6 @@
 package com.example.e_exam;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -11,6 +12,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
 
 public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHolder> {
@@ -18,9 +25,11 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
     private ArrayList<String> classList;
     private int selectedPosition = RecyclerView.NO_POSITION;
     private OnItemLongClickListener longClickListener;
+    private DatabaseReference databaseRef;
 
     public ClassAdapter(ArrayList<String> classList) {
         this.classList = classList;
+        this.databaseRef = FirebaseDatabase.getInstance().getReference("Classes");
     }
 
     @NonNull
@@ -31,29 +40,45 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ClassViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ClassViewHolder holder, @SuppressLint("RecyclerView") int position) {
         String className = classList.get(position);
         holder.tvClassName.setText(className);
-        holder.iconCourse.setImageResource(R.drawable.course); // Replace with your icon
+        holder.iconCourse.setImageResource(R.drawable.course);
 
-        // Đặt màu nền cho mục được chọn
-        holder.itemView.setBackgroundColor(selectedPosition == position ? Color.parseColor("#E1BEE7") : Color.TRANSPARENT);
+        // Get teacher name from Firebase
+        databaseRef.child(className).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String teacherName = snapshot.child("teacherName").getValue(String.class);
+                if (teacherName != null && !teacherName.isEmpty()) {
+                    holder.tvTeacherName.setText(teacherName);
+                } else {
+                    holder.tvTeacherName.setText("Chưa có giáo viên");
+                }
+            }
 
-        // Xử lý sự kiện khi nhấn vào mục trong RecyclerView
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                holder.tvTeacherName.setText("Chưa có giáo viên");
+            }
+        });
+
+        // Set selected background color
+        holder.itemView.setBackgroundColor(selectedPosition == position ?
+                Color.parseColor("#E1BEE7") : Color.TRANSPARENT);
+
+        // Handle click event
         holder.itemView.setOnClickListener(v -> {
-              // Lưu lại vị trí được chọn
             selectedPosition = position;
-
-            // Cập nhật màu nền
             notifyDataSetChanged();
 
-            // Chuyển đến ClassActivity
+            // Navigate to ListStudentActivity
             Intent intent = new Intent(holder.itemView.getContext(), ClassActivity.class);
             intent.putExtra("CLASS_NAME", className);
             holder.itemView.getContext().startActivity(intent);
         });
 
-        // Xử lý sự kiện khi nhấn giữ lâu vào mục trong RecyclerView
+        // Handle long click
         holder.itemView.setOnLongClickListener(v -> {
             if (longClickListener != null) {
                 longClickListener.onItemLongClick(className);
@@ -73,11 +98,13 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
 
     public static class ClassViewHolder extends RecyclerView.ViewHolder {
         TextView tvClassName;
+        TextView tvTeacherName;
         ImageView iconCourse;
 
         public ClassViewHolder(@NonNull View itemView) {
             super(itemView);
             tvClassName = itemView.findViewById(R.id.tvClassName);
+            tvTeacherName = itemView.findViewById(R.id.tvTeacherName);
             iconCourse = itemView.findViewById(R.id.icon_course);
         }
     }
