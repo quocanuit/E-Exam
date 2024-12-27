@@ -73,7 +73,7 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
             notifyDataSetChanged();
 
             // Navigate to ListStudentActivity
-            Intent intent = new Intent(holder.itemView.getContext(), ListStudentActivity.class);
+            Intent intent = new Intent(holder.itemView.getContext(), ClassActivity.class);
             intent.putExtra("CLASS_NAME", className);
             holder.itemView.getContext().startActivity(intent);
         });
