@@ -47,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@id/image_list"
                 android:layout_marginStart="16dp"
-                android:text="Danh sách lớp"
+                android:text="Danh sách học sinh"
                 android:textSize="18sp"
                 android:textColor="@android:color/black"/>
         </RelativeLayout>

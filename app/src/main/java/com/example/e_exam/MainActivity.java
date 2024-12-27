@@ -105,17 +105,24 @@ public class MainActivity extends AppCompatActivity {
             if (databaseTask.isSuccessful() && databaseTask.getResult().exists()) {
                 DataSnapshot userSnapshot = databaseTask.getResult();
                 String role = userSnapshot.child("role").getValue(String.class);
+                String Customuid = userSnapshot.child("uid").getValue(String.class);
 
+                Intent intent = null;
                 if ("Student".equals(role)) {
-                    startActivity(new Intent(MainActivity.this, StudentActivity.class));
+                    intent = new Intent(MainActivity.this, StudentActivity.class);
                 } else if ("Teacher".equals(role)) {
-                    startActivity(new Intent(MainActivity.this, TeacherActivity.class));
+                    intent = new Intent(MainActivity.this, TeacherActivity.class);
                 } else if ("Admin".equals(role)) {
-                    startActivity(new Intent(MainActivity.this, AdminActivityClass.class));
+                    intent = new Intent(MainActivity.this, AdminActivityClass.class);
                 } else {
                     Toast.makeText(this, "Invalid role assigned", Toast.LENGTH_SHORT).show();
                 }
-                finish();
+
+                if (intent != null) {
+                    intent.putExtra("Customuid", Customuid);
+                    startActivity(intent);
+                    finish();
+                }
             } else {
                 Toast.makeText(this, "Failed to retrieve user data", Toast.LENGTH_SHORT).show();
             }
