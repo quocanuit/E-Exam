@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,7 +26,7 @@ public class ClassAdapterStudent extends RecyclerView.Adapter<ClassAdapterStuden
     private ArrayList<String> classList;
     private Context context;
     private OnClassJoinListener listener;
-    private String studentId; // Thêm biến này để lưu UID của sinh viên
+    private String studentId;
 
     public interface OnClassJoinListener {
         void onClassJoin(String className, String studentName);
@@ -37,7 +36,7 @@ public class ClassAdapterStudent extends RecyclerView.Adapter<ClassAdapterStuden
         this.classList = classList;
         this.context = context;
         this.listener = listener;
-        this.studentId = studentId; // Khởi tạo biến studentId
+        this.studentId = studentId;
     }
 
     @NonNull
@@ -54,45 +53,66 @@ public class ClassAdapterStudent extends RecyclerView.Adapter<ClassAdapterStuden
         holder.iconCourse.setImageResource(R.drawable.course);
 
         holder.itemView.setOnClickListener(v -> {
-            // Kiểm tra xem sinh viên đã tham gia lớp này chưa
-            DatabaseReference classRef = FirebaseDatabase.getInstance().getReference("Classes").child(className).child("students").child(studentId);
+            DatabaseReference classRef = FirebaseDatabase.getInstance()
+                    .getReference("Classes")
+                    .child(className)
+                    .child("students")
+                    .child(studentId);
+
             classRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if (snapshot.exists()) {
-                        // Nếu sinh viên đã tham gia lớp, chuyển đến ClassStudent
+                        // Nếu sinh viên đã tham gia lớp
                         Intent intent = new Intent(context, ClassStudent.class);
                         intent.putExtra("className", className);
                         context.startActivity(intent);
                     } else {
-                        // Nếu sinh viên chưa tham gia lớp, hiển thị dialog
-                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                        builder.setTitle("Bạn có muốn tham gia lớp này không?");
-                        builder.setMessage("Nhập tên của bạn:");
-                        // Thêm EditText để nhập tên sinh viên
-                        final EditText input = new EditText(context);
-                        builder.setView(input);
-
-                        builder.setPositiveButton("OK", (dialog, which) -> {
-                            String studentName = input.getText().toString().trim();
-                            if (!studentName.isEmpty()) {
-                                listener.onClassJoin(className, studentName);
-                            } else {
-                                Toast.makeText(context, "Student name cannot be empty", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-
-                        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
-
-                        builder.show();
+                        // Nếu sinh viên chưa tham gia lớp
+                        fetchStudentNameAndShowDialog(className);
                     }
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
-                    Toast.makeText(context, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Lỗi: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
+        });
+    }
+
+    private void fetchStudentNameAndShowDialog(String className) {
+        DatabaseReference userRef = FirebaseDatabase.getInstance()
+                .getReference("users")
+                .child(studentId)
+                .child("fullName");
+
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    String studentName = snapshot.getValue(String.class);
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                    builder.setTitle("Bạn có muốn tham gia lớp này không?");
+                    builder.setMessage("Tên sinh viên: " + studentName);
+
+                    builder.setPositiveButton("Tham gia", (dialog, which) -> {
+                        listener.onClassJoin(className, studentName);
+                        dialog.dismiss();
+                    });
+
+                    builder.setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());
+                    builder.show();
+                } else {
+                    Toast.makeText(context, "Không tìm thấy thông tin sinh viên.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(context, "Lỗi: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
