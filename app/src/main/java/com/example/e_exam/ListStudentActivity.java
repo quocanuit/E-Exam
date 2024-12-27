@@ -1,5 +1,6 @@
 package com.example.e_exam;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.widget.Toast;
 import android.widget.TextView;
@@ -16,9 +17,12 @@ import java.util.ArrayList;
 public class ListStudentActivity extends AppCompatActivity {
 
     private TextView NameClass;
+    private TextView teacherNameView;
+    private TextView teacherIdView;
     private TableLayout tableLayoutStudents;
     private ArrayList<String> studentsList;
     private DatabaseReference databaseReference;
+    private String className;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,63 +30,134 @@ public class ListStudentActivity extends AppCompatActivity {
         setContentView(R.layout.activity_list_student);
 
         // Nhận tên lớp từ Intent
-        String className = getIntent().getStringExtra("CLASS_NAME");
+        className = getIntent().getStringExtra("CLASS_NAME");
 
-        // Ánh xạ TextView và TableLayout
+        // Ánh xạ các view
         NameClass = findViewById(R.id.tvClassName);
+        teacherNameView = findViewById(R.id.tvTeacherName);
         tableLayoutStudents = findViewById(R.id.tableLayoutStudents);
 
         // Cập nhật tên lớp vào TextView
         if (className != null) {
             NameClass.setText("Lớp: " + className);
+
+            // Initialize database reference
+            databaseReference = FirebaseDatabase.getInstance().getReference("Classes").child(className);
+
+            // Load class info and students
+            loadClassInfo();
+            loadStudents();
         }
 
-
         studentsList = new ArrayList<>();
+    }
 
-        // Firebase reference để lấy danh sách sinh viên
-        databaseReference = FirebaseDatabase.getInstance().getReference("Classes").child(className).child("students");
-
-        // Truy cập Firebase để lấy danh sách sinh viên
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+    private void loadClassInfo() {
+        databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-                studentsList.clear(); // Làm sạch danh sách sinh viên hiện tại
+                Class classInfo = snapshot.getValue(Class.class);
+                if (classInfo != null) {
+                    teacherNameView.setText("Giáo viên: " +
+                            (classInfo.getTeacherName() != null ? classInfo.getTeacherName() : "Chưa có"));
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                Toast.makeText(ListStudentActivity.this,
+                        "Lỗi khi tải thông tin lớp: " + error.getMessage(),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadStudents() {
+        DatabaseReference studentsRef = databaseReference.child("students");
+        studentsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                // Xóa tất cả các hàng cũ trừ hàng tiêu đề
+                int childCount = tableLayoutStudents.getChildCount();
+                if (childCount > 1) {
+                    tableLayoutStudents.removeViews(1, childCount - 1);
+                }
+
+                studentsList.clear();
 
                 // Lặp qua danh sách sinh viên và thêm vào TableLayout
-                int index = 1; // Số thứ tự
+                int index = 1;
                 for (DataSnapshot studentSnapshot : snapshot.getChildren()) {
+                    String studentKey = studentSnapshot.getKey();
                     String studentName = studentSnapshot.child("studentName").getValue(String.class);
+
                     if (studentName != null) {
-                        studentsList.add(studentName); // Thêm tên sinh viên vào danh sách
+                        studentsList.add(studentName);
 
-                        // Tạo một hàng cho mỗi sinh viên
-                        TableRow tableRow = new TableRow(ListStudentActivity.this);
-
-                        // Thêm số thứ tự
-                        TextView numberTextView = new TextView(ListStudentActivity.this);
-                        numberTextView.setText(String.valueOf(index));
-                        numberTextView.setPadding(16, 8, 16, 8);
-                        tableRow.addView(numberTextView);
-
-                        // Thêm tên sinh viên
-                        TextView nameTextView = new TextView(ListStudentActivity.this);
-                        nameTextView.setText(studentName);
-                        nameTextView.setPadding(16, 8, 16, 8);
-                        tableRow.addView(nameTextView);
-
-                        // Thêm hàng vào TableLayout
+                        // Tạo một hàng mới cho mỗi sinh viên
+                        TableRow tableRow = createStudentRow(index, studentName, studentKey);
                         tableLayoutStudents.addView(tableRow);
-
-                        index++; // Tăng số thứ tự
+                        index++;
                     }
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError error) {
-                Toast.makeText(ListStudentActivity.this, "Lỗi: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ListStudentActivity.this,
+                        "Lỗi: " + error.getMessage(),
+                        Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private TableRow createStudentRow(int index, String studentName, String studentKey) {
+        TableRow tableRow = new TableRow(this);
+        tableRow.setPadding(0, 8, 0, 8);
+
+        // Thêm số thứ tự
+        TextView numberTextView = new TextView(this);
+        numberTextView.setText(String.valueOf(index));
+        numberTextView.setPadding(16, 8, 16, 8);
+        numberTextView.setTextColor(getResources().getColor(android.R.color.black));
+        tableRow.addView(numberTextView);
+
+        // Thêm tên sinh viên
+        TextView nameTextView = new TextView(this);
+        nameTextView.setText(studentName);
+        nameTextView.setPadding(16, 8, 16, 8);
+        nameTextView.setTextColor(getResources().getColor(android.R.color.black));
+        tableRow.addView(nameTextView);
+
+        // Thêm effect khi nhấn giữ
+        tableRow.setBackgroundResource(android.R.drawable.list_selector_background);
+
+        // Xử lý sự kiện khi nhấn giữ
+        tableRow.setOnLongClickListener(view -> {
+            showDeleteConfirmationDialog(studentKey, studentName);
+            return true;
+        });
+
+        return tableRow;
+    }
+
+    private void showDeleteConfirmationDialog(String studentKey, String studentName) {
+        new AlertDialog.Builder(this)
+                .setTitle("Xác nhận xóa")
+                .setMessage("Bạn có chắc chắn muốn xóa học sinh " + studentName + " khỏi lớp?")
+                .setPositiveButton("Xóa", (dialog, which) -> {
+                    removeStudent(studentKey);
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void removeStudent(String studentKey) {
+        DatabaseReference studentRef = databaseReference.child("students").child(studentKey);
+        studentRef.removeValue()
+                .addOnSuccessListener(aVoid ->
+                        Toast.makeText(this, "Đã xóa học sinh thành công", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Lỗi khi xóa học sinh: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 }
