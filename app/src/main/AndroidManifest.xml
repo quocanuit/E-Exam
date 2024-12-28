@@ -22,6 +22,9 @@
             android:name=".RegisterActivity"
             android:exported="false" />
         <activity
+            android:name=".ScoreStudent"
+            android:exported="false" />
+        <activity
             android:name=".ExamAction"
             android:exported="false" />
         <activity
