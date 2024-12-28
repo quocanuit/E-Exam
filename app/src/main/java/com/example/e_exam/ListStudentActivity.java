@@ -2,17 +2,27 @@ package com.example.e_exam;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 import android.widget.TextView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ListStudentActivity extends AppCompatActivity {
 
@@ -50,6 +60,72 @@ public class ListStudentActivity extends AppCompatActivity {
         }
 
         studentsList = new ArrayList<>();
+
+        FloatingActionButton fabAddStudent = findViewById(R.id.fabAddStudent);
+        fabAddStudent.setOnClickListener(v -> showStudentSelectionDialog());
+    }
+
+    private void showStudentSelectionDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_student_selection, null);
+        RecyclerView recyclerView = dialogView.findViewById(R.id.recyclerViewStudents);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        List<UserModel> studentList = new ArrayList<>();
+        StudentSelectionAdapter adapter = new StudentSelectionAdapter(studentList);
+
+        // Create the dialog first
+        AlertDialog dialog = builder.setView(dialogView)
+                .setNegativeButton("Hủy", null)
+                .create();
+
+        // Then use it in the listener
+        adapter.setOnStudentSelectedListener(student -> {
+            addStudentToClass(student);
+            dialog.dismiss();
+        });
+
+        recyclerView.setAdapter(adapter);
+
+        // Load students from Firebase
+        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
+        usersRef.orderByChild("role").equalTo("Student")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        studentList.clear();
+                        for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                            UserModel user = userSnapshot.getValue(UserModel.class);
+                            if (user != null) {
+                                studentList.add(user);
+                            }
+                        }
+                        adapter.notifyDataSetChanged();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(ListStudentActivity.this,
+                                "Lỗi khi tải danh sách học sinh: " + error.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        dialog.show();
+    }
+
+    private void addStudentToClass(UserModel student) {
+        DatabaseReference studentRef = databaseReference.child("students").push();
+        Map<String, Object> studentData = new HashMap<>();
+        studentData.put("studentName", student.getFullName());
+        studentData.put("studentId", student.getUid());
+        studentData.put("email", student.getEmail());
+
+        studentRef.setValue(studentData)
+                .addOnSuccessListener(aVoid -> Toast.makeText(this,
+                        "Đã thêm học sinh thành công", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e -> Toast.makeText(this,
+                        "Lỗi khi thêm học sinh: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void loadClassInfo() {
