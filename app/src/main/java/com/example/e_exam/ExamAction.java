@@ -9,16 +9,19 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import java.text.SimpleDateFormat;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+import android.content.Intent;
 
+import java.util.Locale;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +43,7 @@ public class ExamAction extends AppCompatActivity {
         // Nhận giá trị className và examName từ Intent
         String className = getIntent().getStringExtra("CLASS_NAME");
         String examName = getIntent().getStringExtra("EXAM_NAME");
-
+        String StudentId = getIntent().getStringExtra("StudentId");
         // Truy xuất câu hỏi từ Firebase
         fetchQuestionsFromFirebase(className, examName);
 
@@ -48,7 +51,7 @@ public class ExamAction extends AppCompatActivity {
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                checkAnswers();
+                checkAnswersAndSaveScore(className, examName, StudentId);
             }
         });
     }
@@ -78,6 +81,20 @@ public class ExamAction extends AppCompatActivity {
     }
 
     private void addQuestionToView(DataSnapshot questionSnapshot) {
+        CardView cardView = new CardView(this);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        layoutParams.setMargins(0, 20, 0, 20);
+        cardView.setLayoutParams(layoutParams);
+        cardView.setRadius(15);
+        cardView.setCardBackgroundColor(getResources().getColor(android.R.color.darker_gray));
+        cardView.setContentPadding(36, 36, 36, 36);
+        cardView.setCardElevation(8);
+
+        LinearLayout cardLinearLayout = new LinearLayout(this);
+        cardLinearLayout.setOrientation(LinearLayout.VERTICAL);
         LayoutInflater inflater = LayoutInflater.from(this);
 
         // Tạo một TextView cho số thứ tự câu hỏi
@@ -127,10 +144,12 @@ public class ExamAction extends AppCompatActivity {
 
         // Tăng biến đếm số thứ tự câu hỏi
         questionNumber++;
+
     }
 
-    private void checkAnswers() {
+    private void checkAnswersAndSaveScore(String className, String examName, String StudentId) {
         int correctCount = 0;
+        int totalCount = correctAnswers.size();
 
         for (Map.Entry<String, RadioGroup> entry : userAnswers.entrySet()) {
             String questionKey = entry.getKey();
@@ -150,10 +169,47 @@ public class ExamAction extends AppCompatActivity {
             }
         }
 
+        // Tính điểm và làm tròn
+        double score = ((double) correctCount / totalCount) * 10;
+        int roundedScore = (int) Math.round(score);
+
+        // Lưu điểm lên Firebase
+        saveScoreToFirebase(className, examName, roundedScore, StudentId);
+
         // Hiển thị kết quả
-        Toast.makeText(this, "Số câu đúng: " + correctCount, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Số câu đúng: " + correctCount + "/" + totalCount + "\nĐiểm số: " + roundedScore, Toast.LENGTH_LONG).show();
+        // Chuyển đến activity ScoreStudent
+        Intent intent = new Intent(ExamAction.this, ScoreStudent.class);
+        intent.putExtra("StudentId", StudentId);
+        intent.putExtra("CLASS_NAME", className);
+        intent.putExtra("EXAM_NAME", examName);
+        startActivity(intent);
     }
 
+    private void saveScoreToFirebase(String className, String examName, int score, String StudentId) {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Grade");
+        String gradeId = databaseReference.push().getKey();
+
+        // Lấy thời gian hiện tại
+        String currentTime = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(new Date());
+
+        Map<String, Object> gradeData = new HashMap<>();
+        gradeData.put("className", className);
+        gradeData.put("examName", examName);
+        gradeData.put("IdStudent", StudentId);
+        gradeData.put("score", score);
+        gradeData.put("timestamp", currentTime); // Thêm thông tin thời gian hiện tại
+
+        if (gradeId != null) {
+            databaseReference.child(gradeId).setValue(gradeData).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Toast.makeText(ExamAction.this, "Điểm đã được lưu thành công", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(ExamAction.this, "Lỗi khi lưu điểm", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
     private String getAnswerKeyFromRadioButtonId(int radioButtonId) {
         if (radioButtonId == R.id.answerA) {
             return "A";

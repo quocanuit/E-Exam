@@ -64,6 +64,7 @@ public class ClassAdapterStudent extends RecyclerView.Adapter<ClassAdapterStuden
                             // Nếu sinh viên đã tham gia lớp, chuyển đến ClassStudent
                             Intent intent = new Intent(context, ClassStudent.class);
                             intent.putExtra("className", className);
+                             intent.putExtra("StudentId", studentId);
                             context.startActivity(intent);
                         } else {
                             // Nếu sinh viên chưa tham gia lớp, hiển thị dialog

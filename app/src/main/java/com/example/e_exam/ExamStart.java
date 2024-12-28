@@ -26,8 +26,10 @@ public class ExamStart extends AppCompatActivity {
     private TextView tvExamName;
     private TextView tvDeadline;
     private Button btnStartExam;
+    private Button btnScore;
     private String className;
     private String examName;
+    private String studentId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -38,10 +40,12 @@ public class ExamStart extends AppCompatActivity {
         tvExamName = findViewById(R.id.tvExamName);
         tvDeadline = findViewById(R.id.tvDeadline);
         btnStartExam = findViewById(R.id.btn_start_exam);
+        btnScore = findViewById(R.id.btn_score);
 
         // Nhận giá trị className và examName từ Intent
         className = getIntent().getStringExtra("CLASS_NAME");
         examName = getIntent().getStringExtra("EXAM_NAME");
+        studentId = getIntent().getStringExtra("StudentId");
 
         // Hiển thị className và examName trên TextViews
         if (className != null) {
@@ -63,8 +67,22 @@ public class ExamStart extends AppCompatActivity {
                     Intent intent = new Intent(ExamStart.this, ExamAction.class);
                     intent.putExtra("CLASS_NAME", className);
                     intent.putExtra("EXAM_NAME", examName);
+                    intent.putExtra("StudentId", studentId);
                     startActivity(intent);
                 }
+            }
+        });
+
+        // Xử lý sự kiện click vào nút btnScore
+        btnScore.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Chuyển sang ScoreStudent để xem kết quả bài làm
+                Intent intent = new Intent(ExamStart.this, ScoreStudent.class);
+                intent.putExtra("CLASS_NAME", className);
+                intent.putExtra("EXAM_NAME", examName);
+                intent.putExtra("StudentId", studentId);
+                startActivity(intent);
             }
         });
     }
@@ -79,9 +97,6 @@ public class ExamStart extends AppCompatActivity {
                     String name = snapshot.child("name").getValue(String.class);
                     if (examName.equals(name)) {
                         Long deadlineMillis = snapshot.child("deadline").getValue(Long.class);
-
-                        // Hiển thị giá trị deadline trong Toast để kiểm tra
-                        Toast.makeText(ExamStart.this, "Deadline (Millis): " + deadlineMillis, Toast.LENGTH_LONG).show();
 
                         if (deadlineMillis != null) {
                             // Chuyển đổi deadline từ milliseconds sang Date

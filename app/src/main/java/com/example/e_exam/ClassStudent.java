@@ -11,6 +11,7 @@ public class ClassStudent extends AppCompatActivity {
     private TextView classNameTextView;
     private CardView cardAssignment;
     private String className;
+    private String StudentId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +23,7 @@ public class ClassStudent extends AppCompatActivity {
 
         // Lấy tên lớp từ Intent
         className = getIntent().getStringExtra("className");
+        StudentId = getIntent().getStringExtra("StudentId");
         classNameTextView.setText(className);
 
         // Đảm bảo các CardView không bị null trước khi gán sự kiện
@@ -36,6 +38,7 @@ public class ClassStudent extends AppCompatActivity {
     private void openExamStudentActivity() {
         Intent intent = new Intent(ClassStudent.this, ExamStudent.class);
         intent.putExtra("CLASS_NAME", className);
+        intent.putExtra("StudentId", StudentId);
         startActivity(intent);
     }
 }
