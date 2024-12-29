@@ -1,14 +1,17 @@
 package com.example.e_exam.model;
 
-public class Questions {
+public class Answer {
     private String id;
     private String correctAnswer;
+    private String selectedAnswer;
 
-    public Questions() {};
+    public Answer() {};
 
-    public Questions(String id, String correctAnswer) {
+    public Answer(String id, String correctAnswer, String selectedAnswer) {
         this.id = id;
         this.correctAnswer = correctAnswer;
+        this.selectedAnswer = selectedAnswer;
+
     }
 
     public String getId() {
@@ -26,4 +29,6 @@ public class Questions {
     public void setCorrectAnswer(String correctAnswer) {
         this.correctAnswer = correctAnswer;
     }
+
+    public String getSelectedAnswer() { return selectedAnswer; }
 }

@@ -1,6 +1,7 @@
 package com.example.e_exam;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -58,5 +59,17 @@ public class StudentActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(android.view.Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar_menu, menu);
         return true;
+    }
+
+    public void showPdfContent(String fileLink) {
+        Intent intent = new Intent(this, ExamResultFragment.class);
+        intent.putExtra("fileLink", fileLink);
+        startActivity(intent);
+    }
+
+    public void showDashboardScore(int score) {
+        Intent intent = new Intent(this, ExamResultFragment.class);
+        intent.putExtra("score", score);
+        startActivity(intent);
     }
 }

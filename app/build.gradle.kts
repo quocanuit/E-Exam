@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.e_exam"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -61,7 +61,9 @@ dependencies {
     implementation("de.hdodenhof:circleimageview:3.1.0")
     implementation("com.google.firebase:firebase-messaging")
     implementation("androidx.preference:preference:1.2.1")
-
+    implementation("com.github.mhiew:android-pdf-viewer:3.2.0-beta.3")
+    implementation("org.apache.poi:poi-ooxml:5.2.3")
+    implementation("org.apache.poi:poi:5.2.3")
 }
 
 

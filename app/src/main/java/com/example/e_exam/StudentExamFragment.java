@@ -24,8 +24,7 @@ public class StudentExamFragment extends Fragment implements StudentExamListAdap
     private static final int ITEMS_PER_PAGE = 20;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_student_exam, container, false);
 
         recyclerView = view.findViewById(R.id.recyclerView);
@@ -41,47 +40,12 @@ public class StudentExamFragment extends Fragment implements StudentExamListAdap
         return view;
     }
 
-    @Override
-    public void onExamClick(StudentExamList exam) {
-        String fileUri = exam.getFileUri(); // Lấy URI file từ item (cần thêm field này trong model StudentExamList)
-
-        ExamDetailFragment detailFragment = ExamDetailFragment.newInstance(
-                exam.getClassName(),
-                exam.getName(),
-                exam.getDueDate(),
-                fileUri
-        );
-
-        requireActivity().getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.frame_layout, detailFragment)
-                .addToBackStack(null)
-                .commit();
-    }
-
-
-    private void setupScrollListener() {
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-                if (layoutManager == null) return;
-                int visibleItemCount = layoutManager.getChildCount();
-                int totalItemCount = layoutManager.getItemCount();
-                int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
-
-                if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
-                        && firstVisibleItemPosition >= 0
-                        && totalItemCount < examList.size()) {
-                    loadMoreItems();
-                }
-            }
-        });
-    }
 
     private void loadMockData() {
+        // Khởi tạo danh sách local trong Fragment
         examList = new ArrayList<>();
 
+        // Thêm dữ liệu mẫu vào danh sách
         examList.add(new StudentExamList("NT531.P11", "Nộp bài thực hành số 6", "pending", 1729173586L, "1"));
         examList.add(new StudentExamList("NT531.P11", "Nộp báo cáo đồ án", "completed", 1729173526L, "2"));
         examList.add(new StudentExamList("NT131.P12", "Nộp trễ tất cả bài thực hành", "pending", 1729173466L, "3"));
@@ -99,8 +63,46 @@ public class StudentExamFragment extends Fragment implements StudentExamListAdap
         if (examList != null && currentDisplayedItems < examList.size()) {
             int endIndex = Math.min(currentDisplayedItems + ITEMS_PER_PAGE, examList.size());
             List<StudentExamList> newItems = examList.subList(currentDisplayedItems, endIndex);
-            adapter.addExams(newItems);
+            adapter.addExams(newItems);  // Sử dụng phương thức addExams của adapter
             currentDisplayedItems = endIndex;
         }
+    }
+
+    @Override
+    public void onExamClick(StudentExamList exam) {
+        // Xử lý sự kiện click ở đây
+        ExamDetailFragment detailFragment = new ExamDetailFragment();
+
+        // Truyền dữ liệu qua Bundle
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("exam", exam);
+        detailFragment.setArguments(bundle);
+
+        // Chuyển fragment
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.frame_layout, detailFragment)  // Đảm bảo ID này khớp với layout của bạn
+                .addToBackStack(null)
+                .commit();
+    }
+
+    private void setupScrollListener() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                if (layoutManager != null) {
+                    int visibleItemCount = layoutManager.getChildCount();
+                    int totalItemCount = layoutManager.getItemCount();
+                    int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+
+                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
+                            && firstVisibleItemPosition >= 0
+                            && totalItemCount < examList.size()) {
+                        loadMoreItems();
+                    }
+                }
+            }
+        });
     }
 }

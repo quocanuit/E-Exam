@@ -9,9 +9,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
+import androidx.appcompat.app.AlertDialog;
 
 import com.example.e_exam.adapter.ExamListResultAdapter;
-import com.example.e_exam.model.Questions;
+import com.example.e_exam.model.Answer;
 import com.example.e_exam.model.Sheet;
 import com.example.e_exam.model.Topic;
 import com.google.firebase.database.DataSnapshot;
@@ -28,6 +29,7 @@ public class ExamResultFragment extends Fragment {
     private View mView;
     private TextView tv_Topic;
     private ListView lv_Result;
+    private ArrayList<Answer> results;
     private ExamDetailFragment examDetailFragment;
 
     public ExamResultFragment() {
@@ -38,10 +40,45 @@ public class ExamResultFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mView = inflater.inflate(R.layout.fragment_exam_result, container, false);
+
         initUI();
-        getData();
+
+        Bundle args = getArguments();
+        if (args != null) {
+            results = (ArrayList<Answer>) args.getSerializable("results");
+
+            if (results == null) {
+                results = new ArrayList<>(); // Nếu "results" là null, khởi tạo nó là một danh sách trống
+            }
+            String examName = args.getString("examName", "Exam Results");
+            tv_Topic.setText(examName);
+
+            // Calculate score
+            int correct = 0;
+            for (Answer answer : results) {
+                if (answer.getSelectedAnswer() != null &&
+                        answer.getSelectedAnswer().equals(answer.getCorrectAnswer())) {
+                    correct++;
+                }
+            }
+            tv_Topic.setText(String.format("%s - Score: %d/%d",
+                    examName, correct, results.size()));
+        }
+
+        ExamListResultAdapter adapter = new ExamListResultAdapter(getContext(), results);
+        lv_Result.setAdapter(adapter);
+
         return mView;
     }
+
+//    @Override
+//    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+//                             Bundle savedInstanceState) {
+//        mView = inflater.inflate(R.layout.fragment_exam_result, container, false);
+//        initUI();
+//        getData();
+//        return mView;
+//    }
 
     private void initUI() {
         tv_Topic = mView.findViewById(R.id.tv_topic);
@@ -55,7 +92,7 @@ public class ExamResultFragment extends Fragment {
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                List<Questions> allQuestions = new ArrayList<>();
+                List<Answer> allQuestions = new ArrayList<>();
                 try {
                     for (DataSnapshot sheetSnapshot : dataSnapshot.getChildren()) {
                         Sheet sheet = sheetSnapshot.getValue(Sheet.class);
@@ -86,7 +123,7 @@ public class ExamResultFragment extends Fragment {
         });
     }
 
-    private void updateListView(List<Questions> questions) {
+    private void updateListView(List<Answer> questions) {
         if (getContext() != null) {
             ExamListResultAdapter adapter = new ExamListResultAdapter(getContext(), questions);
             lv_Result.setAdapter(adapter);
@@ -96,7 +133,7 @@ public class ExamResultFragment extends Fragment {
     private void showAlertDialog(String title, String message) {
         if (getContext() == null) return;
 
-        new androidx.appcompat.app.AlertDialog.Builder(getContext())
+        new AlertDialog.Builder(getContext())
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton("OK", (dialog, which) -> {
