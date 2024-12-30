@@ -42,18 +42,21 @@ public class TeacherExamListAdapter extends RecyclerView.Adapter<TeacherExamList
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        private final TextView classCodeTextView;
         private final TextView nameTextView;
         private final TextView dateTextView;
         private final TextView statusTextView;
 
         ViewHolder(View itemView) {
             super(itemView);
+            classCodeTextView = itemView.findViewById(R.id.classCodeTextView);
             nameTextView = itemView.findViewById(R.id.nameTextView);
             dateTextView = itemView.findViewById(R.id.dateTextView);
             statusTextView = itemView.findViewById(R.id.statusTextView);
         }
 
         void bind(TeacherExamList exam) {
+            classCodeTextView.setText(exam.getClassCode());
             nameTextView.setText(exam.getName());
             dateTextView.setText(exam.getFormattedDate());
             statusTextView.setText(exam.isAssigned() ? "Đã giao" : "Chưa giao");

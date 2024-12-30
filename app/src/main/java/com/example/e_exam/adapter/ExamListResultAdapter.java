@@ -37,8 +37,10 @@ public class ExamListResultAdapter extends ArrayAdapter<Answer> {
         Answer answer = questions.get(position);
         tv_question.setText("Question " + answer.getId());
         tv_selected.setText(answer.getSelectedAnswer() != null ?
-                answer.getSelectedAnswer() : "No answer");
+                answer.getSelectedAnswer() : "X");
         tv_correct_answer.setText(answer.getCorrectAnswer());
+
+        tv_correct_answer.setTextColor(Color.parseColor("#4CAF50")); // Green for all correct answers
 
         // Set color for selected answer
         if (answer.getSelectedAnswer() != null) {

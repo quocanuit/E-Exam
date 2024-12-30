@@ -31,6 +31,13 @@
             android:layout_marginStart="16dp">
 
             <TextView
+                android:id="@+id/classCodeTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
                 android:id="@+id/nameTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

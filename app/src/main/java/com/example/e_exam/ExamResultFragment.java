@@ -71,15 +71,6 @@ public class ExamResultFragment extends Fragment {
         return mView;
     }
 
-//    @Override
-//    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-//                             Bundle savedInstanceState) {
-//        mView = inflater.inflate(R.layout.fragment_exam_result, container, false);
-//        initUI();
-//        getData();
-//        return mView;
-//    }
-
     private void initUI() {
         tv_Topic = mView.findViewById(R.id.tv_topic);
         lv_Result = mView.findViewById(R.id.lv_result);

@@ -1,10 +1,12 @@
 package com.example.e_exam;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -14,6 +16,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.e_exam.adapter.TeacherExamListAdapter;
 import com.example.e_exam.model.TeacherExamList;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,19 +48,26 @@ public class TeacherExamFragment extends Fragment {
         }
 
         // Find the button
-        Button createExamButton = view.findViewById(R.id.createExamButton);  // Button id from XML
+        Button createExamButton = view.findViewById(R.id.createExamButton); // Button id from XML
+        Button createTestButton = view.findViewById(R.id.createTestButton);
 
         // Set an OnClickListener to handle button clicks
-        createExamButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Perform fragment transaction to navigate to ExamCreateFragment
-                assert getFragmentManager() != null;
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
-                transaction.replace(R.id.frame_layout, ExamCreateFragment.newInstance(teacherId));  // Replace with new fragment
-                transaction.addToBackStack(null);  // Allow user to navigate back to TeacherExamFragment
-                transaction.commit();
-            }
+        createExamButton.setOnClickListener(v -> {
+            // Perform fragment transaction to navigate to ExamCreateFragment
+            assert getFragmentManager() != null;
+            FragmentTransaction transaction = getFragmentManager().beginTransaction();
+            transaction.replace(R.id.frame_layout, ExamCreateFragment.newInstance(teacherId));  // Replace with new fragment
+            transaction.addToBackStack(null);  // Allow user to navigate back to TeacherExamFragment
+            transaction.commit();
+        });
+
+        createTestButton.setOnClickListener(v -> {
+            // Perform fragment transaction to navigate to TestCreateFragment
+            assert getFragmentManager() != null;
+            FragmentTransaction transaction = getFragmentManager().beginTransaction();
+            transaction.replace(R.id.frame_layout, TestCreateFragment.newInstance(teacherId));  // Replace with new fragment
+            transaction.addToBackStack(null);  // Allow user to navigate back to TeacherExamFragment
+            transaction.commit();
         });
 
         // Set up RecyclerView
@@ -66,8 +78,9 @@ public class TeacherExamFragment extends Fragment {
 
         // Initialize and set up scroll listener
         setupScrollListener();
-        loadMockData();
-        loadMoreItems();
+
+        // Load data from Firebase
+        loadDataFromFirebase();
 
         return view;
     }
@@ -86,40 +99,38 @@ public class TeacherExamFragment extends Fragment {
                 if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
                         && firstVisibleItemPosition >= 0
                         && totalItemCount < examList.size()) {
-                    loadMoreItems();
+                    loadDataFromFirebase();
                 }
             }
         });
     }
 
-    private void loadMockData() {
-        examList = new ArrayList<>();
+    private void loadDataFromFirebase() {
+        DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference("Exams");
 
-        // Hardcoded mock data
-        examList.add(new TeacherExamList("Nộp bài thực hành số 6", 1729006273L, false, "1"));
-        examList.add(new TeacherExamList("Nộp báo cáo đồ án", 1729006213L, true, "2"));
-        examList.add(new TeacherExamList("Nộp trễ tất cả bài thực hành", 1729006153L, false, "3"));
-        examList.add(new TeacherExamList("Nộp bài thực hành số 5", 1729130914L, false, "4"));
-        examList.add(new TeacherExamList("Nộp bài tập", 1729145627L, false, "5"));
-        examList.add(new TeacherExamList("Bài thực hành 2", 1729145567L, true, "6"));
-        examList.add(new TeacherExamList("Phát triển ứng dụng trên thiết bị di động", 1729145507L, true, "7"));
-        examList.add(new TeacherExamList("Hệ thống nhúng mạng không dây", 1729145447L, false, "8"));
-        examList.add(new TeacherExamList("Kiểm tra giữa kì", 1729145387L, false, "9"));
-        examList.add(new TeacherExamList("An toàn mạng máy tính", 1729145360L, false, "10"));
-        examList.add(new TeacherExamList("Đánh giá hiệu năng hệ thống mạng máy tính", 1729145300L, false, "11"));
-        examList.add(new TeacherExamList("Bài tập về nhà", 1729145240L, true, "12"));
-        examList.add(new TeacherExamList("Bài tập lớn", 1729145180L, false, "13"));
-        examList.add(new TeacherExamList("Bài tập khi rảnh", 1729145120L, true, "14"));
-        examList.add(new TeacherExamList("Bài tập khi bận", 1729150213L, false, "15"));
-        examList.add(new TeacherExamList("Nhập môn lập trình", 1729150153L, true, "16"));
+        databaseRef.orderByChild("timestamp").limitToLast(ITEMS_PER_PAGE).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                if (examList == null) {
+                    examList = new ArrayList<>();
+                } else {
+                    examList.clear();  // Clear the existing list
+                }
+
+                // Add new data to the list
+                for (DataSnapshot snapshot : task.getResult().getChildren()) {
+                    TeacherExamList exam = snapshot.getValue(TeacherExamList.class);
+                    if (exam != null) {
+                        examList.add(exam); // Add each exam with classCode
+                    }
+                }
+
+                // Notify adapter of data changes
+                adapter.addExams(examList); // Notify adapter that new exams were added
+            } else {
+                Toast.makeText(getContext(), "Error loading data: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e("Firebase", "Error loading data from Firebase", task.getException());
+            }
+        });
     }
 
-    private void loadMoreItems() {
-        if (examList != null && currentDisplayedItems < examList.size()) {
-            int endIndex = Math.min(currentDisplayedItems + ITEMS_PER_PAGE, examList.size());
-            List<TeacherExamList> newItems = examList.subList(currentDisplayedItems, endIndex);
-            adapter.addExams(newItems);
-            currentDisplayedItems = endIndex;
-        }
-    }
 }

@@ -4,6 +4,7 @@ import static android.content.ContentValues.TAG;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -24,13 +25,26 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.e_exam.adapter.QuestionMutipleChoiceAdapter;
+import com.example.e_exam.model.Answer;
 import com.example.e_exam.model.Question;
 import com.github.barteksc.pdfviewer.PDFView;
+
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class ExamDetailFragment extends Fragment {
     private static final String ARG_CLASS_NAME = "className";
@@ -38,13 +52,14 @@ public class ExamDetailFragment extends Fragment {
     private static final String ARG_DUE_DATE = "dueDate";
     private static final int PERMISSION_REQUEST_CODE = 1000;
     private static final int REQUEST_CODE_PICK_FILE = 1;
+    private String answerUrl;
     private String fileLink;
     private PDFView pdfView;
     private List<Question> questionList;
     private QuestionMutipleChoiceAdapter questionMutipleChoiceAdapter;
     private RecyclerView rcvChooseAnswer;
 
-    public static ExamDetailFragment newInstance(String className, String name, long dueDate, String fileUri, int questionCount) {
+    public static ExamDetailFragment newInstance(String className, String name, long dueDate, String fileUri, String answerUrl , int questionCount) {
         ExamDetailFragment fragment = new ExamDetailFragment();
         Bundle args = new Bundle();
         args.putString(ARG_CLASS_NAME, className);
@@ -52,6 +67,7 @@ public class ExamDetailFragment extends Fragment {
         args.putLong(ARG_DUE_DATE, dueDate);
         args.putString("fileUri", fileUri); // Duy trì URI file
         args.putInt("questionCount", questionCount); // Số lượng câu hỏi
+        args.putString("answerUrl", answerUrl);
         fragment.setArguments(args);
         return fragment;
     }
@@ -62,8 +78,13 @@ public class ExamDetailFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_exam_detail, container, false);
 
         if (getArguments() != null) {
-            fileLink = getArguments().getString("fileUri");
-            int questionCount = getArguments().getInt("questionCount", 0);
+            String pdfUrl = getArguments().getString("pdfUrl");
+            answerUrl = getArguments().getString("answerUrl");
+
+            Log.d(TAG, "Received PDF URL: " + pdfUrl);
+            Log.d(TAG, "Received Answer URL: " + answerUrl);
+
+            int questionCount = getArguments().getInt("questionCount", 40);
 
             TextView questionCountText = view.findViewById(R.id.questionCountText);
             if (questionCountText != null) {
@@ -71,8 +92,11 @@ public class ExamDetailFragment extends Fragment {
             }
 
             pdfView = view.findViewById(R.id.pdfView);
-            if (fileLink != null) {
-                displayPdf(fileLink); // Hiển thị PDF nếu có fileLink
+            if (pdfUrl != null && !pdfUrl.isEmpty()) {
+                displayPdf(pdfUrl);
+            } else {
+                Log.e(TAG, "PDF URL is null or empty");
+                Toast.makeText(getContext(), "PDF URL not found", Toast.LENGTH_SHORT).show();
             }
 
             rcvChooseAnswer = view.findViewById(R.id.rcvChooseAnswer);
@@ -94,19 +118,13 @@ public class ExamDetailFragment extends Fragment {
 
         Button submitButton = view.findViewById(R.id.submitButton);
         submitButton.setOnClickListener(v -> {
-            // Tạo fragment mới (ví dụ: ExamResultFragment)
-            ExamResultFragment resultFragment = new ExamResultFragment();
-
-            // Gửi dữ liệu (nếu cần) vào fragment mới
-            Bundle args = new Bundle();
-            args.putInt("score", 0);  // Ví dụ: đưa điểm số vào
-            resultFragment.setArguments(args);
-
-            // Thực hiện chuyển fragment
-            getActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, resultFragment)
-                    .addToBackStack(null)
-                    .commit();
+            Log.d(TAG, "Answer URL: " + answerUrl); // Thêm logging
+            if (answerUrl != null && !answerUrl.isEmpty()) {
+                downloadAndCheckAnswers(answerUrl);
+            } else {
+                Log.e(TAG, "Answer URL is null or empty"); // Thêm logging
+                Toast.makeText(getContext(), "Answer file not found", Toast.LENGTH_SHORT).show();
+            }
         });
 
         return view;
@@ -123,58 +141,215 @@ public class ExamDetailFragment extends Fragment {
         }
     }
 
-    private void displayPdf(String fileLink) {
-        Log.d(TAG, "File URI: " + fileLink);
+    private void displayPdf(String pdfUrl) {
+        Log.d(TAG, "PDF URL: " + pdfUrl);
 
-        try {
-            InputStream inputStream = getContext().getAssets().open(fileLink);
-            if (inputStream != null) {
-                pdfView.fromStream(inputStream)
-                        .enableSwipe(true)
-                        .swipeHorizontal(false)
-                        .enableDoubletap(true)
-                        .defaultPage(0)
-                        .onLoad(nbPages -> Log.d(TAG, "PDF loaded successfully. Pages: " + nbPages))
-                        .onError(throwable -> {
-                            Log.e(TAG, "Error loading PDF", throwable);
-                            Toast.makeText(getContext(), "Error: " + throwable.getMessage(), Toast.LENGTH_LONG).show();
-                        })
-                        .load();
-            } else {
-                Log.e(TAG, "Failed to open PDF from assets.");
-                Toast.makeText(getContext(), "Failed to open PDF", Toast.LENGTH_SHORT).show();
+        // Hiển thị loading indicator
+        ProgressDialog progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage("Loading PDF...");
+        progressDialog.show();
+
+        // Tạo request để download file
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url(pdfUrl)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                getActivity().runOnUiThread(() -> {
+                    progressDialog.dismiss();
+                    Toast.makeText(getContext(), "Error loading PDF: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                });
             }
-        } catch (IOException e) {
-            Log.e(TAG, "IOException when opening PDF", e);
-            Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        } catch (Exception e) {
-            Log.e(TAG, "Unexpected error", e);
-            Toast.makeText(getContext(), "Unexpected error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    getActivity().runOnUiThread(() -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(getContext(), "Failed to load PDF",
+                                Toast.LENGTH_LONG).show();
+                    });
+                    return;
+                }
+
+                // Đọc bytes từ response
+                byte[] pdfBytes = response.body().bytes();
+
+                // Hiển thị PDF trên UI thread
+                getActivity().runOnUiThread(() -> {
+                    try {
+                        pdfView.fromBytes(pdfBytes)
+                                .enableSwipe(true)
+                                .swipeHorizontal(false)
+                                .enableDoubletap(true)
+                                .defaultPage(0)
+                                .onLoad(nbPages -> {
+                                    Log.d(TAG, "PDF loaded successfully. Pages: " + nbPages);
+                                    progressDialog.dismiss();
+                                })
+                                .onError(t -> {
+                                    Log.e(TAG, "Error displaying PDF", t);
+                                    progressDialog.dismiss();
+                                    Toast.makeText(getContext(),
+                                            "Error displaying PDF: " + t.getMessage(),
+                                            Toast.LENGTH_LONG).show();
+                                })
+                                .load();
+                    } catch (Exception e) {
+                        progressDialog.dismiss();
+                        Log.e(TAG, "Error displaying PDF", e);
+                        Toast.makeText(getContext(),
+                                "Error displaying PDF: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
     }
 
-    private void checkAnswers(Uri fileName) {
+    private void checkAnswers(Uri excelFileUri) {
         try {
-            int score = 0;
-            // Hiển thị điểm số hoặc thực hiện hành động khác
-            Toast.makeText(getContext(), "Your score: " + score + "/" + questionList.size(), Toast.LENGTH_LONG).show();
-            navigateToResultFragment(score);
+            // Lấy câu trả lời của người dùng từ adapter
+            Map<Integer, String> userAnswers = questionMutipleChoiceAdapter.getUserAnswers();
+            List<Answer> results = new ArrayList<>();
+
+            // Đọc file Excel đáp án
+            InputStream inputStream = getActivity().getContentResolver().openInputStream(excelFileUri);
+            Workbook workbook = new XSSFWorkbook(inputStream);
+            Sheet sheet = workbook.getSheetAt(0);
+
+            // Duyệt qua từng dòng trong file Excel
+            for (Row row : sheet) {
+                if (row.getRowNum() == 0) continue; // Bỏ qua dòng tiêu đề
+
+                String questionId = String.valueOf(row.getRowNum()); // Số thứ tự câu hỏi
+                String correctAnswer = row.getCell(1).getStringCellValue(); // Đáp án đúng
+
+                Answer answer = new Answer();
+                answer.setId(questionId);
+                answer.setCorrectAnswer(correctAnswer);
+
+                // Lấy câu trả lời của người dùng (nếu có)
+                String selectedAnswer = userAnswers.get(row.getRowNum() - 1);
+                answer.setSelectedAnswer(selectedAnswer);
+
+                results.add(answer);
+            }
+
+            workbook.close();
+            inputStream.close();
+
+            // Chuyển đến fragment kết quả
+            ExamResultFragment resultFragment = new ExamResultFragment();
+            Bundle args = new Bundle();
+            args.putSerializable("results", new ArrayList<>(results));
+            args.putString("examName", getArguments().getString(ARG_NAME, "Exam"));
+            resultFragment.setArguments(args);
+
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, resultFragment)
+                    .addToBackStack(null)
+                    .commit();
 
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(getContext(), "Error reading answers: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(),
+                    "Error reading answers: " + e.getMessage(),
+                    Toast.LENGTH_LONG).show();
         }
     }
 
-    private void navigateToResultFragment(int score) {
-        ExamResultFragment resultFragment = new ExamResultFragment();
-        Bundle args = new Bundle();
-        args.putInt("score", score);
-        resultFragment.setArguments(args);
-        getActivity().getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, resultFragment)
-                .addToBackStack(null)
-                .commit();
+    private void downloadAndCheckAnswers(String answerUrl) {
+        ProgressDialog progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage("Checking answers...");
+        progressDialog.show();
+
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url(answerUrl)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                getActivity().runOnUiThread(() -> {
+                    progressDialog.dismiss();
+                    Toast.makeText(getContext(), "Error downloading answer file: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                });
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    getActivity().runOnUiThread(() -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(getContext(), "Failed to download answer file",
+                                Toast.LENGTH_LONG).show();
+                    });
+                    return;
+                }
+
+                try {
+                    // Lấy câu trả lời của người dùng từ adapter
+                    Map<Integer, String> userAnswers = questionMutipleChoiceAdapter.getUserAnswers();
+                    List<Answer> results = new ArrayList<>();
+
+                    // Đọc file Excel từ response body
+                    InputStream inputStream = response.body().byteStream();
+                    Workbook workbook = new XSSFWorkbook(inputStream);
+                    Sheet sheet = workbook.getSheetAt(0);
+
+                    // Duyệt qua từng dòng trong file Excel
+                    for (Row row : sheet) {
+                        if (row.getRowNum() == 0) continue; // Bỏ qua dòng tiêu đề
+
+                        String questionId = String.valueOf(row.getRowNum()); // Số thứ tự câu hỏi
+                        String correctAnswer = row.getCell(1).getStringCellValue(); // Đáp án đúng
+
+                        Answer answer = new Answer();
+                        answer.setId(questionId);
+                        answer.setCorrectAnswer(correctAnswer);
+
+                        // Lấy câu trả lời của người dùng (nếu có)
+                        String selectedAnswer = userAnswers.get(row.getRowNum() - 1);
+                        answer.setSelectedAnswer(selectedAnswer);
+
+                        results.add(answer);
+                    }
+
+                    workbook.close();
+                    inputStream.close();
+
+                    // Chuyển đến fragment kết quả trên UI thread
+                    getActivity().runOnUiThread(() -> {
+                        progressDialog.dismiss();
+                        ExamResultFragment resultFragment = new ExamResultFragment();
+                        Bundle args = new Bundle();
+                        args.putSerializable("results", new ArrayList<>(results));
+                        args.putString("examName", getArguments().getString(ARG_NAME, "Exam"));
+                        resultFragment.setArguments(args);
+
+                        getActivity().getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragment_container, resultFragment)
+                                .addToBackStack(null)
+                                .commit();
+                    });
+
+                } catch (Exception e) {
+                    getActivity().runOnUiThread(() -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(getContext(),
+                                "Error processing answer file: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    });
+                }
+            }
+        });
     }
 
     @Override

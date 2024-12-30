@@ -6,9 +6,11 @@ import java.util.Locale;
 
 public class TeacherExamList {
     private String id;
+    private String classCode;
     private String name;
     private long date;
     private boolean isAssigned;
+    private String pdfUrl;
 
     public String getId() {
         return id;
@@ -42,11 +44,36 @@ public class TeacherExamList {
         isAssigned = assigned;
     }
 
+    public String getPdfUrl() {
+        return pdfUrl;
+    }
+
+    public String getClassCode(){
+        return classCode;
+    }
+
+    public void setClassCode(String classCode) {
+        this.classCode = classCode;
+    }
+
+    public TeacherExamList(){
+
+    }
+
     public TeacherExamList(String name, long date, boolean isAssigned, String id) {
         this.id = id;
         this.name = name;
         this.date = date;
         this.isAssigned = isAssigned;
+    }
+
+    public TeacherExamList(String classCode, String name, long date, boolean isAssigned, String id, String pdfUrl) {
+        this.classCode = classCode;
+        this.id = id;
+        this.name = name;
+        this.date = date;
+        this.isAssigned = isAssigned;
+        this.pdfUrl = pdfUrl;
     }
 
     public String getFormattedDate() {

@@ -11,7 +11,6 @@ public class Answer {
         this.id = id;
         this.correctAnswer = correctAnswer;
         this.selectedAnswer = selectedAnswer;
-
     }
 
     public String getId() {
@@ -31,4 +30,6 @@ public class Answer {
     }
 
     public String getSelectedAnswer() { return selectedAnswer; }
+
+    public void setSelectedAnswer(String selectedAnswer) { this.selectedAnswer = selectedAnswer; }
 }

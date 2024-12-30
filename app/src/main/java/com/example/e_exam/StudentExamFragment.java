@@ -1,9 +1,11 @@
 package com.example.e_exam;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -12,97 +14,180 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.e_exam.adapter.StudentExamListAdapter;
 import com.example.e_exam.model.StudentExamList;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class StudentExamFragment extends Fragment implements StudentExamListAdapter.OnExamClickListener {
     private RecyclerView recyclerView;
     private StudentExamListAdapter adapter;
     private List<StudentExamList> examList;
-    private int currentDisplayedItems = 0;
-    private static final int ITEMS_PER_PAGE = 20;
+    private FirebaseFirestore db;
+    private ListenerRegistration examListener;
+    private String currentUserId;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_student_exam, container, false);
 
+        initializeFirebase();
+        initializeRecyclerView(view);
+
+        return view;
+    }
+
+    private void initializeFirebase() {
+        db = FirebaseFirestore.getInstance();
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            DatabaseReference userRef = FirebaseDatabase.getInstance()
+                    .getReference("users")
+                    .child(currentUser.getUid());
+
+            userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    String customUid = snapshot.child("uid").getValue(String.class);
+                    // Sử dụng customUid để query Firestore
+                    loadExams(customUid);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Log.e("StudentExamFragment", "Error getting custom UID", error.toException());
+                }
+            });
+        }
+
+    }
+
+    private void initializeRecyclerView(View view) {
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new StudentExamListAdapter();
         adapter.setOnExamClickListener(this);
         recyclerView.setAdapter(adapter);
+    }
 
-        setupScrollListener();
-        loadMockData();
-        loadMoreItems();
+    private void loadExams(String customUid) {
+        Log.d("StudentExamFragment", "Current user ID: " + customUid);
 
-        return view;
+        // Kiểm tra các bài thi có trong mảng studentIds mà có studentId giống currentUserId
+        Query examQuery = db.collection("exams")
+                .whereArrayContains("studentIds", customUid)
+                .whereEqualTo("status", "pending");
+
+        examListener = examQuery.addSnapshotListener((value, error) -> {
+            if (error != null) {
+                Log.e("StudentExamFragment", "Listen failed.", error);
+                return;
+            }
+
+            if (value == null || value.isEmpty()) {
+                Log.d("StudentExamFragment", "No exams found for user: " + customUid);
+                return;
+            }
+
+            List<StudentExamList> newExamList = new ArrayList<>();
+            for (DocumentSnapshot document : value.getDocuments()) {
+                Log.d("StudentExamFragment", "Processing exam: " + document.getId());
+                Log.d("StudentExamFragment", "Data: " + document.getData());
+
+                try {
+                    String id = document.getId();
+                    String name = document.getString("name");
+                    String className = document.getString("className");
+                    String status = document.getString("status");
+                    Long deadline = document.getLong("deadline");
+                    String pdfUrl = document.getString("pdfUrl");
+                    String answerUrl = document.getString("answerUrl");
+
+                    StudentExamList exam = new StudentExamList(className, name, status, deadline, id);
+                    exam.setPdfUrl(pdfUrl);
+                    exam.setAnswerUrl(answerUrl);
+                    newExamList.add(exam);
+
+                } catch (Exception e) {
+                    Log.e("StudentExamFragment", "Error processing exam " + document.getId(), e);
+                }
+            }
+
+            examList = newExamList;
+            adapter.clearExams();
+            adapter.addExams(examList);
+            updateExamList(value);
+            Log.d("StudentExamFragment", "Updated adapter with " + examList.size() + " items");
+        });
     }
 
 
-    private void loadMockData() {
-        // Khởi tạo danh sách local trong Fragment
+    private void updateExamList(QuerySnapshot snapshots) {
         examList = new ArrayList<>();
+        for (DocumentSnapshot doc : snapshots.getDocuments()) {
+            String id = doc.getId();
+            String name = doc.getString("name");
+            String className = doc.getString("className");
+            String status = doc.getString("status");
+            Long deadline = doc.getLong("deadline");
+            String pdfUrl = doc.getString("pdfUrl");
+            String answerUrl = doc.getString("answerUrl");
 
-        // Thêm dữ liệu mẫu vào danh sách
-        examList.add(new StudentExamList("NT531.P11", "Nộp bài thực hành số 6", "pending", 1729173586L, "1"));
-        examList.add(new StudentExamList("NT531.P11", "Nộp báo cáo đồ án", "completed", 1729173526L, "2"));
-        examList.add(new StudentExamList("NT131.P12", "Nộp trễ tất cả bài thực hành", "pending", 1729173466L, "3"));
-        examList.add(new StudentExamList("NT531.P11", "Nộp bài thực hành số 5", "outdated", 1729173406L, "4"));
-        examList.add(new StudentExamList("NT531.P11", "Nộp bài thực hành số 4", "outdated", 1729173346L, "5"));
-        examList.add(new StudentExamList("NT101.P13", "Bài tập 6", "pending", 1729173286L, "6"));
-        examList.add(new StudentExamList("NT118", "Đồ án", "pending", 1729173226L, "7"));
-        examList.add(new StudentExamList("NT118", "Bài tập", "completed", 1729173166L, "8"));
-        examList.add(new StudentExamList("NT118", "Lý thuyết", "completed", 1729173106L, "9"));
-        examList.add(new StudentExamList("NT118.88", "Đồ án p2", "pending", 1729173046L, "10"));
-        examList.add(new StudentExamList("NT118.69", "Bài tập", "outdated", 1729172986L, "11"));
+            if (name != null && className != null) {
+                StudentExamList exam = new StudentExamList(className, name, status, deadline, id);
+                exam.setPdfUrl(pdfUrl);
+                exam.setAnswerUrl(answerUrl);
+                examList.add(exam);
+            }
+        }
+
+        adapter.clearExams();
+        if (examList != null && !examList.isEmpty()) {
+            Log.d("StudentExamFragment", "Adding " + examList.size() + " exams to adapter");
+            adapter.addExams(examList);
+        } else {
+            Log.d("StudentExamFragment", "No exams to display");
+            Toast.makeText(getContext(), "Không có bài kiểm tra nào", Toast.LENGTH_SHORT).show();
+        }
     }
 
-    private void loadMoreItems() {
-        if (examList != null && currentDisplayedItems < examList.size()) {
-            int endIndex = Math.min(currentDisplayedItems + ITEMS_PER_PAGE, examList.size());
-            List<StudentExamList> newItems = examList.subList(currentDisplayedItems, endIndex);
-            adapter.addExams(newItems);  // Sử dụng phương thức addExams của adapter
-            currentDisplayedItems = endIndex;
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (examListener != null) {
+            examListener.remove();
         }
     }
 
     @Override
     public void onExamClick(StudentExamList exam) {
-        // Xử lý sự kiện click ở đây
         ExamDetailFragment detailFragment = new ExamDetailFragment();
-
-        // Truyền dữ liệu qua Bundle
         Bundle bundle = new Bundle();
-        bundle.putSerializable("exam", exam);
+        bundle.putSerializable("exams", exam);
+        bundle.putString("pdfUrl", exam.getPdfUrl()); // Thêm PDF URL vào bundle
+        bundle.putString("answerUrl", exam.getAnswerUrl());
+
+        Log.d("StudentExamFragment", "PDF URL: " + exam.getPdfUrl());
+        Log.d("StudentExamFragment", "Answer URL: " + exam.getAnswerUrl());
+
         detailFragment.setArguments(bundle);
 
-        // Chuyển fragment
         requireActivity().getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.frame_layout, detailFragment)  // Đảm bảo ID này khớp với layout của bạn
+                .replace(R.id.frame_layout, detailFragment)
                 .addToBackStack(null)
                 .commit();
-    }
-
-    private void setupScrollListener() {
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-                if (layoutManager != null) {
-                    int visibleItemCount = layoutManager.getChildCount();
-                    int totalItemCount = layoutManager.getItemCount();
-                    int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
-
-                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
-                            && firstVisibleItemPosition >= 0
-                            && totalItemCount < examList.size()) {
-                        loadMoreItems();
-                    }
-                }
-            }
-        });
     }
 }
