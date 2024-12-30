@@ -115,7 +115,7 @@ public class ListStudentActivity extends AppCompatActivity {
     }
 
     private void addStudentToClass(UserModel student) {
-        DatabaseReference studentRef = databaseReference.child("students").push();
+        DatabaseReference studentRef = databaseReference.child("students").child(student.getUid());
         Map<String, Object> studentData = new HashMap<>();
         studentData.put("studentName", student.getFullName());
         studentData.put("studentId", student.getUid());

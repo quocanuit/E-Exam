@@ -1,14 +1,18 @@
 package com.example.e_exam.model;
 
-public class Questions {
+import java.io.Serializable;
+
+public class Answer implements Serializable {
     private String id;
     private String correctAnswer;
+    private String selectedAnswer;
 
-    public Questions() {};
+    public Answer() {};
 
-    public Questions(String id, String correctAnswer) {
+    public Answer(String id, String correctAnswer, String selectedAnswer) {
         this.id = id;
         this.correctAnswer = correctAnswer;
+        this.selectedAnswer = selectedAnswer;
     }
 
     public String getId() {
@@ -26,4 +30,8 @@ public class Questions {
     public void setCorrectAnswer(String correctAnswer) {
         this.correctAnswer = correctAnswer;
     }
+
+    public String getSelectedAnswer() { return selectedAnswer; }
+
+    public void setSelectedAnswer(String selectedAnswer) { this.selectedAnswer = selectedAnswer; }
 }

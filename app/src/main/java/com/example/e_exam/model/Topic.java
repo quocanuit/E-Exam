@@ -4,11 +4,11 @@ import java.util.List;
 
 public class Topic {
     private String id;
-    private List<Questions> questions;
+    private List<Answer> questions;
 
     public Topic() {};
 
-    public Topic(String id, List<Questions> questions) {
+    public Topic(String id, List<Answer> questions) {
         this.id = id;
         this.questions = questions;
     }
@@ -21,11 +21,11 @@ public class Topic {
         this.id = id;
     }
 
-    public List<Questions> getQuestions() {
+    public List<Answer> getQuestions() {
         return questions;
     }
 
-    public void setQuestions(List<Questions> questions) {
+    public void setQuestions(List<Answer> questions) {
         this.questions = questions;
     }
 }

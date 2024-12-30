@@ -5,12 +5,18 @@ import java.util.Map;
 public class Question {
     private String questionText;
     private Map<String, String> answers;
+    private String[] options;
     private String correctAnswer;
 
     public Question(String questionText, Map<String, String> answers, String correctAnswer) {
         this.questionText = questionText;
         this.answers = answers;
         this.correctAnswer = correctAnswer;
+    }
+
+    public Question(String questionText, String[] options) {
+        this.questionText = questionText;
+        this.options = options;
     }
 
     // Getters and setters
@@ -29,6 +35,10 @@ public class Question {
     public void setAnswers(Map<String, String> answers) {
         this.answers = answers;
     }
+
+    public String[] getOptions() { return options; }
+
+    public void setOptions(String[] options) { this.options = options; }
 
     public String getCorrectAnswer() {
         return correctAnswer;

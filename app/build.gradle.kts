@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.e_exam"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -54,12 +54,19 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-database:20.0.5")
     implementation("androidx.cardview:cardview:1.0.0")
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
     implementation("com.google.firebase:firebase-auth:23.1.0")
+    implementation("com.google.firebase:firebase-firestore:24.0.2")
     implementation("com.github.bumptech.glide:glide:4.14.2")
     implementation("de.hdodenhof:circleimageview:3.1.0")
     implementation("com.google.firebase:firebase-messaging")
     implementation("androidx.preference:preference:1.2.1")
-
+    implementation("com.github.mhiew:android-pdf-viewer:3.2.0-beta.3")
+    implementation("org.apache.poi:poi-ooxml:5.2.3")
+    implementation("org.apache.poi:poi:5.2.3")
+    implementation("com.google.firebase:firebase-appcheck-playintegrity:17.1.1")
+    implementation("com.google.firebase:firebase-appcheck-debug:17.1.1")
+    implementation("com.squareup.okhttp3:okhttp:4.9.1")
 }
 
 
