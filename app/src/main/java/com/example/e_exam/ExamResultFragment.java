@@ -23,6 +23,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ExamResultFragment extends Fragment {
 
@@ -45,15 +46,25 @@ public class ExamResultFragment extends Fragment {
 
         Bundle args = getArguments();
         if (args != null) {
-            results = (ArrayList<Answer>) args.getSerializable("results");
+            // Chuyển đổi từ List<Map> sang List<Answer>
+            List<Map<String, Object>> resultMaps =
+                    (List<Map<String, Object>>) args.getSerializable("results");
 
-            if (results == null) {
-                results = new ArrayList<>(); // Nếu "results" là null, khởi tạo nó là một danh sách trống
+            results = new ArrayList<>();
+            if (resultMaps != null) {
+                for (Map<String, Object> map : resultMaps) {
+                    Answer answer = new Answer();
+                    answer.setId((String) map.get("id"));
+                    answer.setSelectedAnswer((String) map.get("selectedAnswer"));
+                    answer.setCorrectAnswer((String) map.get("correctAnswer"));
+                    results.add(answer);
+                }
             }
-            String examName = args.getString("examName", "Exam Results");
-            tv_Topic.setText(examName);
 
-            // Calculate score
+            String examName = args.getString("examName", "Exam Results");
+            boolean isViewOnly = args.getBoolean("isViewOnly", false);
+
+            // Calculate and display score
             int correct = 0;
             for (Answer answer : results) {
                 if (answer.getSelectedAnswer() != null &&

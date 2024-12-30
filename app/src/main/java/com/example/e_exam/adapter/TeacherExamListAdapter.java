@@ -30,6 +30,11 @@ public class TeacherExamListAdapter extends RecyclerView.Adapter<TeacherExamList
         holder.bind(exam);
     }
 
+    public void clearExams() {
+        examList.clear();
+        notifyDataSetChanged();
+    }
+
     @Override
     public int getItemCount() {
         return examList.size();

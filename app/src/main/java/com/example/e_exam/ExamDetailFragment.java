@@ -28,6 +28,9 @@ import com.example.e_exam.adapter.QuestionMutipleChoiceAdapter;
 import com.example.e_exam.model.Answer;
 import com.example.e_exam.model.Question;
 import com.github.barteksc.pdfviewer.PDFView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -37,6 +40,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -275,81 +279,130 @@ public class ExamDetailFragment extends Fragment {
 
         client.newCall(request).enqueue(new Callback() {
             @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                getActivity().runOnUiThread(() -> {
-                    progressDialog.dismiss();
-                    Toast.makeText(getContext(), "Error downloading answer file: " + e.getMessage(),
-                            Toast.LENGTH_LONG).show();
-                });
-            }
-
-            @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    getActivity().runOnUiThread(() -> {
-                        progressDialog.dismiss();
-                        Toast.makeText(getContext(), "Failed to download answer file",
-                                Toast.LENGTH_LONG).show();
-                    });
+                    handleError(progressDialog, "Failed to download answer file");
                     return;
                 }
 
                 try {
-                    // Lấy câu trả lời của người dùng từ adapter
                     Map<Integer, String> userAnswers = questionMutipleChoiceAdapter.getUserAnswers();
-                    List<Answer> results = new ArrayList<>();
+                    List<Answer> results = processAnswers(response.body().byteStream(), userAnswers);
 
-                    // Đọc file Excel từ response body
-                    InputStream inputStream = response.body().byteStream();
-                    Workbook workbook = new XSSFWorkbook(inputStream);
-                    Sheet sheet = workbook.getSheetAt(0);
+                    FirebaseFirestore db = FirebaseFirestore.getInstance();
+                    String examId = getArguments().getString("examId");
+                    FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-                    // Duyệt qua từng dòng trong file Excel
-                    for (Row row : sheet) {
-                        if (row.getRowNum() == 0) continue; // Bỏ qua dòng tiêu đề
+                    if (examId != null && currentUser != null) {
+                        // Chuyển đổi List<Answer> thành List<Map>
+                        List<Map<String, Object>> resultMaps = new ArrayList<>();
+                        for (Answer answer : results) {
+                            Map<String, Object> answerMap = new HashMap<>();
+                            answerMap.put("id", answer.getId());
+                            answerMap.put("selectedAnswer", answer.getSelectedAnswer());
+                            answerMap.put("correctAnswer", answer.getCorrectAnswer());
+                            resultMaps.add(answerMap);
+                        }
 
-                        String questionId = String.valueOf(row.getRowNum()); // Số thứ tự câu hỏi
-                        String correctAnswer = row.getCell(1).getStringCellValue(); // Đáp án đúng
+                        Map<String, Object> examResult = new HashMap<>();
+                        examResult.put("results", resultMaps);
+                        examResult.put("completedAt", System.currentTimeMillis());
+                        examResult.put("score", calculateScore(results));
+                        examResult.put("userId", currentUser.getUid());
+                        examResult.put("examName", getArguments().getString("name"));
 
-                        Answer answer = new Answer();
-                        answer.setId(questionId);
-                        answer.setCorrectAnswer(correctAnswer);
-
-                        // Lấy câu trả lời của người dùng (nếu có)
-                        String selectedAnswer = userAnswers.get(row.getRowNum() - 1);
-                        answer.setSelectedAnswer(selectedAnswer);
-
-                        results.add(answer);
+                        // Cập nhật trạng thái và lưu kết quả
+                        db.collection("exams").document(examId)
+                                .update("status", "completed")
+                                .addOnSuccessListener(aVoid -> {
+                                    db.collection("examResults")
+                                            .document(examId + "_" + currentUser.getUid())
+                                            .set(examResult)
+                                            .addOnSuccessListener(documentReference -> {
+                                                showResults(resultMaps, progressDialog);
+                                            })
+                                            .addOnFailureListener(e -> handleError(progressDialog,
+                                                    "Error saving results: " + e.getMessage()));
+                                })
+                                .addOnFailureListener(e -> handleError(progressDialog,
+                                        "Error updating exam status: " + e.getMessage()));
                     }
-
-                    workbook.close();
-                    inputStream.close();
-
-                    // Chuyển đến fragment kết quả trên UI thread
-                    getActivity().runOnUiThread(() -> {
-                        progressDialog.dismiss();
-                        ExamResultFragment resultFragment = new ExamResultFragment();
-                        Bundle args = new Bundle();
-                        args.putSerializable("results", new ArrayList<>(results));
-                        args.putString("examName", getArguments().getString(ARG_NAME, "Exam"));
-                        resultFragment.setArguments(args);
-
-                        getActivity().getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.fragment_container, resultFragment)
-                                .addToBackStack(null)
-                                .commit();
-                    });
-
                 } catch (Exception e) {
-                    getActivity().runOnUiThread(() -> {
-                        progressDialog.dismiss();
-                        Toast.makeText(getContext(),
-                                "Error processing answer file: " + e.getMessage(),
-                                Toast.LENGTH_LONG).show();
-                    });
+                    handleError(progressDialog, "Error processing answers: " + e.getMessage());
                 }
             }
+
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                handleError(progressDialog, "Error downloading answer file: " + e.getMessage());
+            }
         });
+    }
+
+    private void showResults(List<Map<String, Object>> resultMaps, ProgressDialog progressDialog) {
+        requireActivity().runOnUiThread(() -> {
+            progressDialog.dismiss();
+            ExamResultFragment resultFragment = new ExamResultFragment();
+            Bundle args = new Bundle();
+            args.putSerializable("results", new ArrayList<>(resultMaps));
+            args.putString("examName", getArguments().getString("name", "Exam"));
+            resultFragment.setArguments(args);
+
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, resultFragment)
+                    .addToBackStack(null)
+                    .commit();
+        });
+    }
+
+    private void handleError(ProgressDialog progressDialog, String message) {
+        requireActivity().runOnUiThread(() -> {
+            progressDialog.dismiss();
+            Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+        });
+    }
+
+    private int calculateScore(List<Answer> results) {
+        int correct = 0;
+        for (Answer answer : results) {
+            if (answer.getSelectedAnswer() != null &&
+                    answer.getSelectedAnswer().equals(answer.getCorrectAnswer())) {
+                correct++;
+            }
+        }
+        return correct;
+    }
+
+    private List<Answer> processAnswers(InputStream inputStream, Map<Integer, String> userAnswers) throws IOException {
+        List<Answer> results = new ArrayList<>();
+
+        // Đọc file Excel
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+
+        // Duyệt qua từng dòng trong file Excel
+        for (Row row : sheet) {
+            if (row.getRowNum() == 0) continue; // Bỏ qua dòng tiêu đề
+
+            String questionId = String.valueOf(row.getRowNum()); // Số thứ tự câu hỏi
+            String correctAnswer = row.getCell(1).getStringCellValue(); // Đáp án đúng
+
+            Answer answer = new Answer();
+            answer.setId(questionId);
+            answer.setCorrectAnswer(correctAnswer);
+
+            // Lấy câu trả lời của người dùng (nếu có)
+            String selectedAnswer = userAnswers.get(row.getRowNum() - 1);
+            answer.setSelectedAnswer(selectedAnswer);
+
+            results.add(answer);
+        }
+
+        workbook.close();
+        inputStream.close();
+
+        return results;
     }
 
     @Override

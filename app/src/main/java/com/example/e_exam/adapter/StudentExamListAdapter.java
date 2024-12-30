@@ -1,5 +1,6 @@
 package com.example.e_exam.adapter;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -94,9 +95,9 @@ public class StudentExamListAdapter extends RecyclerView.Adapter<StudentExamList
                 examButton.setText(itemView.getContext().getString(R.string.is_pending));
                 examButton.setEnabled(true);
             } else if (Objects.equals(exam.getStatus(), "completed")) {
-                examButton.setBackgroundColor(itemView.getContext().getColor(R.color.pastel_green));
+                examButton.setBackgroundColor(itemView.getContext().getColor(R.color.green));
                 examButton.setText(itemView.getContext().getString(R.string.is_done));
-                examButton.setEnabled(false);
+                examButton.setEnabled(true);
             } else {
                 examButton.setBackgroundColor(itemView.getContext().getColor(R.color.red));
                 examButton.setText(itemView.getContext().getString(R.string.is_outdated));

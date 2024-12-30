@@ -11,6 +11,7 @@ public class TeacherExamList {
     private long date;
     private boolean isAssigned;
     private String pdfUrl;
+    private String answerUrl;
 
     public String getId() {
         return id;
@@ -48,6 +49,18 @@ public class TeacherExamList {
         return pdfUrl;
     }
 
+    public void setPdfUrl(String pdfUrl) {
+        this.pdfUrl = pdfUrl;
+    }
+
+    public String getAnswerUrl() {
+        return answerUrl;
+    }
+
+    public void setAnswerUrl(String answerUrl) {
+        this.answerUrl = answerUrl;
+    }
+
     public String getClassCode(){
         return classCode;
     }
@@ -67,13 +80,14 @@ public class TeacherExamList {
         this.isAssigned = isAssigned;
     }
 
-    public TeacherExamList(String classCode, String name, long date, boolean isAssigned, String id, String pdfUrl) {
+    public TeacherExamList(String classCode, String name, long date, boolean isAssigned, String id, String pdfUrl, String answerUrl) {
         this.classCode = classCode;
         this.id = id;
         this.name = name;
         this.date = date;
         this.isAssigned = isAssigned;
         this.pdfUrl = pdfUrl;
+        this.answerUrl = answerUrl;
     }
 
     public String getFormattedDate() {

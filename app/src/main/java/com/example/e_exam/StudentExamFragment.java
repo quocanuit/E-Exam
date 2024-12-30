@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.e_exam.adapter.StudentExamListAdapter;
+import com.example.e_exam.model.Answer;
 import com.example.e_exam.model.StudentExamList;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -87,8 +88,7 @@ public class StudentExamFragment extends Fragment implements StudentExamListAdap
 
         // Kiểm tra các bài thi có trong mảng studentIds mà có studentId giống currentUserId
         Query examQuery = db.collection("exams")
-                .whereArrayContains("studentIds", customUid)
-                .whereEqualTo("status", "pending");
+                .whereArrayContains("studentIds", customUid);
 
         examListener = examQuery.addSnapshotListener((value, error) -> {
             if (error != null) {
@@ -173,21 +173,103 @@ public class StudentExamFragment extends Fragment implements StudentExamListAdap
 
     @Override
     public void onExamClick(StudentExamList exam) {
-        ExamDetailFragment detailFragment = new ExamDetailFragment();
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("exams", exam);
-        bundle.putString("pdfUrl", exam.getPdfUrl()); // Thêm PDF URL vào bundle
-        bundle.putString("answerUrl", exam.getAnswerUrl());
+        if ("completed".equals(exam.getStatus())) {
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        Log.d("StudentExamFragment", "PDF URL: " + exam.getPdfUrl());
-        Log.d("StudentExamFragment", "Answer URL: " + exam.getAnswerUrl());
+            if (currentUser != null) {
+                db.collection("examResults")
+                        .document(exam.getId() + "_" + currentUser.getUid())
+                        .get()
+                        .addOnSuccessListener(document -> {
+                            if (document.exists()) {
+                                List<Map<String, Object>> resultMaps =
+                                        (List<Map<String, Object>>) document.get("results");
+                                String examName = document.getString("examName");
 
-        detailFragment.setArguments(bundle);
+                                ExamResultFragment resultFragment = new ExamResultFragment();
+                                Bundle args = new Bundle();
+                                args.putSerializable("results", new ArrayList<>(resultMaps));
+                                args.putString("examName", examName);
+                                args.putBoolean("isViewOnly", true);
+                                resultFragment.setArguments(args);
+
+                                requireActivity().getSupportFragmentManager()
+                                        .beginTransaction()
+                                        .replace(R.id.frame_layout, resultFragment)
+                                        .addToBackStack(null)
+                                        .commit();
+                            }
+                        })
+                        .addOnFailureListener(e ->
+                                Toast.makeText(getContext(),
+                                        "Error loading results: " + e.getMessage(),
+                                        Toast.LENGTH_SHORT).show());
+            }
+        } else {
+            ExamDetailFragment detailFragment = ExamDetailFragment.newInstance(
+                    exam.getClassName(),
+                    exam.getName(),
+                    exam.getDueDate(),
+                    exam.getPdfUrl(),
+                    exam.getAnswerUrl(),
+                    40
+            );
+
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.frame_layout, detailFragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
+    }
+
+    private void showSavedResults(String examName, ArrayList<Answer> results) {
+        ExamResultFragment resultFragment = new ExamResultFragment();
+        Bundle args = new Bundle();
+        args.putSerializable("results", results);
+        args.putString("examName", examName);
+        args.putBoolean("isViewOnly", true);  // Thêm flag để đánh dấu chế độ xem lại
+        resultFragment.setArguments(args);
 
         requireActivity().getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.frame_layout, detailFragment)
+                .replace(R.id.frame_layout, resultFragment)
                 .addToBackStack(null)
                 .commit();
+    }
+
+    private void loadExamResult(String examId) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) return;
+
+        FirebaseFirestore.getInstance()
+                .collection("examResults")
+                .document(examId + "_" + currentUser.getUid())
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        List<Map<String, Object>> resultMaps =
+                                (List<Map<String, Object>>) documentSnapshot.get("results");
+
+                        // Chuyển đến ExamResultFragment với kết quả
+                        ExamResultFragment resultFragment = new ExamResultFragment();
+                        Bundle args = new Bundle();
+                        args.putSerializable("results", new ArrayList<>(resultMaps));
+                        args.putString("examName", documentSnapshot.getString("examName"));
+                        resultFragment.setArguments(args);
+
+                        getParentFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fragment_container, resultFragment)
+                                .addToBackStack(null)
+                                .commit();
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(getContext(),
+                                "Error loading exam result: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show()
+                );
     }
 }
