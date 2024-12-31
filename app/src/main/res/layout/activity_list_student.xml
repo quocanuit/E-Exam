@@ -1,53 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:background="#F5F5F5">
 
-    <!-- Tên lớp học -->
-    <TextView
-        android:id="@+id/tvClassName"
+    <!-- Header Card -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tên Lớp"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:paddingBottom="16dp"/>
+        android:layout_margin="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp">
 
-    <!-- Button Danh sách học sinh -->
-    <Button
-        android:id="@+id/btn_create_class"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Danh sách học sinh"
-        android:layout_marginTop="16dp"
-    />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-    <!-- TableLayout cho danh sách sinh viên -->
-    <TableLayout
-        android:id="@+id/tableLayoutStudents"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:stretchColumns="1"
-        android:paddingBottom="16dp"
-        android:layout_marginTop="24dp"> <!-- Tạo khoảng cách giữa button và table layout -->
-
-        <!-- Cột tiêu đề -->
-        <TableRow>
+            <!-- Class Name -->
             <TextView
-                android:layout_width="wrap_content"
+                android:id="@+id/tvClassName"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Số Thứ Tự"
+                android:text="Tên Lớp"
+                android:textSize="24sp"
                 android:textStyle="bold"
-                android:paddingEnd="16dp" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tên học sinh"
-                android:textStyle="bold" />
-        </TableRow>
+                android:textColor="#1976D2"/>
 
-        <!-- Các hàng sinh viên sẽ được thêm vào động -->
-    </TableLayout>
+            <!-- Teacher Info Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp">
+
+                <TextView
+                    android:id="@+id/tvTeacherName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Giáo viên: "
+                    android:textSize="16sp"
+                    android:textColor="#333333"/>
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#E0E0E0"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Giữ tên học sinh để xóa"
+                android:textStyle="italic"
+                android:textSize="12sp"
+                android:textColor="#757575"/>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Students List Card -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp">
+
+        <TableLayout
+            android:id="@+id/tableLayoutStudents"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stretchColumns="1"
+            android:padding="16dp">
+
+            <!-- Header Row -->
+            <TableRow
+                android:background="#E3F2FD"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="STT"
+                    android:textStyle="bold"
+                    android:textColor="#1976D2"
+                    android:padding="8dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tên học sinh"
+                    android:textStyle="bold"
+                    android:textColor="#1976D2"
+                    android:padding="8dp"/>
+            </TableRow>
+        </TableLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabAddStudent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:layout_margin="16dp"
+            android:src="@drawable/baseline_add_24"
+            android:tint="#FFFFFF"
+            android:backgroundTint="#6200EE"/>
+    </androidx.cardview.widget.CardView>
+
+
 </LinearLayout>

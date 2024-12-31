@@ -1,5 +1,6 @@
 package com.example.e_exam.adapter;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,22 +18,22 @@ import java.util.List;
 import java.util.Objects;
 
 public class StudentExamListAdapter extends RecyclerView.Adapter<StudentExamListAdapter.ViewHolder> {
-    private static final List<StudentExamList> examList = new ArrayList<>();
-    private static OnExamClickListener listener;
+    private final List<StudentExamList> examList = new ArrayList<>();  // Changed to private final
+    private OnExamClickListener listener;
 
     public interface OnExamClickListener {
         void onExamClick(StudentExamList exam);
     }
 
     public void setOnExamClickListener(OnExamClickListener listener) {
-        StudentExamListAdapter.listener = listener;
+        this.listener = listener;
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_student_exam, parent, false);
-        return new ViewHolder(view);
+        return new ViewHolder(view, listener, examList);
     }
 
     @Override
@@ -52,14 +53,25 @@ public class StudentExamListAdapter extends RecyclerView.Adapter<StudentExamList
         notifyItemRangeInserted(startPosition, newExams.size());
     }
 
+    // Add method to clear the list if needed
+    public void clearExams() {
+        examList.clear();
+        notifyDataSetChanged();
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView classNameTextView;
         private final TextView nameTextView;
         private final TextView dueTextView;
         private final Button examButton;
+        private final List<StudentExamList> examList;
+        private final OnExamClickListener listener;
 
-        public ViewHolder(View itemView) {
+        public ViewHolder(View itemView, OnExamClickListener listener, List<StudentExamList> examList) {
             super(itemView);
+            this.listener = listener;
+            this.examList = examList;
+
             classNameTextView = itemView.findViewById(R.id.classNameTextView);
             nameTextView = itemView.findViewById(R.id.nameTextView);
             dueTextView = itemView.findViewById(R.id.dueTextView);
@@ -83,9 +95,9 @@ public class StudentExamListAdapter extends RecyclerView.Adapter<StudentExamList
                 examButton.setText(itemView.getContext().getString(R.string.is_pending));
                 examButton.setEnabled(true);
             } else if (Objects.equals(exam.getStatus(), "completed")) {
-                examButton.setBackgroundColor(itemView.getContext().getColor(R.color.pastel_green));
+                examButton.setBackgroundColor(itemView.getContext().getColor(R.color.green));
                 examButton.setText(itemView.getContext().getString(R.string.is_done));
-                examButton.setEnabled(false);
+                examButton.setEnabled(true);
             } else {
                 examButton.setBackgroundColor(itemView.getContext().getColor(R.color.red));
                 examButton.setText(itemView.getContext().getString(R.string.is_outdated));

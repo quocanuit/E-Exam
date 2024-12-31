@@ -30,7 +30,7 @@ public class ExamStudent extends AppCompatActivity {
     private ExamAdapter examAdapter;
     private List<Exam> examList;
     private String className;
-
+    private String StudentId;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,7 +44,7 @@ public class ExamStudent extends AppCompatActivity {
 
         // Nhận giá trị className từ Intent
         className = getIntent().getStringExtra("CLASS_NAME");
-
+        StudentId = getIntent().getStringExtra("StudentId");
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("exams");
 
         databaseReference.addValueEventListener(new ValueEventListener() {
@@ -110,6 +110,7 @@ public class ExamStudent extends AppCompatActivity {
                 Intent intent = new Intent(context, ExamStart.class);
                 intent.putExtra("CLASS_NAME", className);
                 intent.putExtra("EXAM_NAME", exam.name);
+                intent.putExtra("StudentId", StudentId);
                 context.startActivity(intent);
             });
         }

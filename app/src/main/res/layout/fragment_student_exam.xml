@@ -7,6 +7,7 @@
     android:gravity="center_horizontal"
     tools:context=".StudentExamFragment">
 
+    <!-- Button Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,27 +16,31 @@
 
         <com.google.android.material.button.MaterialButton
             android:layout_width="132dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:text="@string/fte_all_exam"
             android:gravity="center_vertical"
-            android:textSize="12sp"/>
+            android:textSize="12sp"
+            android:layout_weight="1"/>
 
         <com.google.android.material.button.MaterialButton
             android:layout_width="132dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:text="@string/fte_pending_exam"
             android:gravity="center_vertical"
             android:textSize="12sp"
             android:textColor="@color/primary"
             android:backgroundTint="@color/primary_fixed"
-            android:layout_marginStart="@dimen/margin_basex2"/>
+            android:layout_marginStart="@dimen/margin_basex2"
+            android:layout_weight="1"/>
 
     </LinearLayout>
 
+    <!-- RecyclerView Section -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:paddingLeft="@dimen/margin_base"
         android:paddingRight="@dimen/margin_base"
         android:layout_marginHorizontal="@dimen/activity_vertical_margin"

@@ -33,95 +33,29 @@
             android:layout_marginBottom="16dp"/>
 
         <!-- WebView for displaying PDF -->
-        <WebView
-            android:id="@+id/pdfWebView"
+        <com.github.barteksc.pdfviewer.PDFView
+            android:id="@+id/pdfView"
             android:layout_width="match_parent"
-            android:layout_height="400dp"
-            android:layout_marginBottom="16dp"/>
+            android:layout_height="250dp"
+            android:requestLegacyExternalStorage="true"/>
 
-        <!-- Multiple-choice question layout -->
-        <LinearLayout
+        <TextView
+            android:id="@+id/questionCountText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="16dp">
+            android:text="Number of Questions: 0"
+            android:textSize="18sp"
+            android:layout_marginBottom="16dp"
+            android:textColor="@android:color/black"/>
 
-            <TextView
-                android:id="@+id/question_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="1. What is the correct answer?"
-                android:textSize="18sp"
-                android:layout_marginBottom="8dp"/>
 
-            <RadioGroup
-                android:id="@+id/answerGroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
+        <!-- Multiple-choice question layout -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rcvChooseAnswer"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
 
-                <RadioButton
-                    android:id="@+id/answerA"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="A"/>
-
-                <RadioButton
-                    android:id="@+id/answerB"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="B"/>
-
-                <RadioButton
-                    android:id="@+id/answerC"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="C"/>
-
-                <RadioButton
-                    android:id="@+id/answerD"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="D"/>
-            </RadioGroup>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="2. What is the correct answer?"
-                android:textSize="18sp"
-                android:layout_marginBottom="8dp"/>
-
-            <RadioGroup
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <RadioButton
-
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="A"/>
-
-                <RadioButton
-
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="B"/>
-
-                <RadioButton
-
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="C"/>
-
-                <RadioButton
-
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="D"/>
-            </RadioGroup>
-        </LinearLayout>
 
         <!-- Submit button -->
         <Button

@@ -12,7 +12,9 @@ import java.util.ArrayList;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.e_exam.user.UserFragment;
-import retrofit2.Retrofit;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.appcheck.FirebaseAppCheck;
+import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory;
 
 public class TeacherActivity extends AppCompatActivity {
 
@@ -52,6 +54,7 @@ public class TeacherActivity extends AppCompatActivity {
 
             return true;
         });
+        AppCheckProvider();
     }
 
     private void replaceFragment(Fragment fragment) {
@@ -65,5 +68,12 @@ public class TeacherActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(android.view.Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar_menu, menu);
         return true;
+    }
+
+    private void AppCheckProvider(){
+        FirebaseApp.initializeApp(this);
+        FirebaseAppCheck firebaseAppCheck = FirebaseAppCheck.getInstance();
+        firebaseAppCheck.installAppCheckProviderFactory(
+                DebugAppCheckProviderFactory.getInstance());
     }
 }

@@ -1,23 +1,14 @@
 package com.example.e_exam;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import java.util.ArrayList;
 
 public class ClassActivity extends AppCompatActivity {
 
     private CardView cardListStudent;
+    private CardView cardAssignment;
     private String className;
 
     @Override
@@ -35,10 +26,20 @@ public class ClassActivity extends AppCompatActivity {
         // CardView cho danh sách sinh viên
         cardListStudent = findViewById(R.id.card_listStudent);
         cardListStudent.setOnClickListener(v -> openListStudentActivity());
+
+        // CardView cho danh sách điểm của học sinh
+        cardAssignment = findViewById(R.id.card_assignment);
+        cardAssignment.setOnClickListener(v -> openListScoreStudentActivity());
     }
 
     private void openListStudentActivity() {
         Intent intent = new Intent(ClassActivity.this, ListStudentActivity.class);
+        intent.putExtra("CLASS_NAME", className);
+        startActivity(intent);
+    }
+
+    private void openListScoreStudentActivity() {
+        Intent intent = new Intent(ClassActivity.this, ListScoreStudentActivity.class);
         intent.putExtra("CLASS_NAME", className);
         startActivity(intent);
     }
