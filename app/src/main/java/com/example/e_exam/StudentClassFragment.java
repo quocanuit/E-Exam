@@ -127,15 +127,46 @@ public class StudentClassFragment extends Fragment implements ClassAdapterStuden
 
     @Override
     public void onClassJoin(String className, String studentName) {
-        Student student = new Student(studentId, studentName);
-        databaseReference.child(className).child("students").child(studentId)
-                .setValue(student)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(getContext(), "Đã tham gia lớp thành công", Toast.LENGTH_SHORT).show();
-                    loadJoinedClasses(); // Cập nhật danh sách lớp đã tham gia
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Tham gia lớp thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
+        DatabaseReference classRef = databaseReference.child(className).child("students").child(studentId);
+
+        // Truy xuất thông tin của người dùng từ nhánh "users"
+        usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                boolean userFound = false;
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    String uid = snapshot.child("uid").getValue(String.class);
+                    if (studentId.equals(uid)) {
+                        userFound = true;
+                        String email = snapshot.child("email").getValue(String.class);
+
+                        // Tạo đối tượng Student với email
+                        Student student = new Student(studentId, studentName, email);
+
+                        // Lưu thông tin học sinh vào lớp học
+                        classRef.setValue(student)
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(getContext(), "Đã tham gia lớp thành công", Toast.LENGTH_SHORT).show();
+                                    loadJoinedClasses(); // Cập nhật danh sách lớp đã tham gia
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(getContext(), "Tham gia lớp thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
+                        break;
+                    }
+                }
+
+                if (!userFound) {
+                    Toast.makeText(getContext(), "Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(getContext(), "Lỗi truy xuất dữ liệu người dùng: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
 }

@@ -83,7 +83,7 @@
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@id/image_assignment"
                 android:layout_marginStart="16dp"
-                android:text="Bài tập"
+                android:text="Danh sách điểm của học sinh"
                 android:textSize="18sp"
                 android:textColor="@android:color/black"/>
         </RelativeLayout>

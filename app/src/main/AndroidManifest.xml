@@ -22,8 +22,9 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
+
         <activity
-            android:name=".RegisterActivity"
+            android:name=".ListScoreStudentActivity"
             android:exported="false" />
         <activity
             android:name=".ScoreStudent"
@@ -64,7 +65,9 @@
         <activity
             android:name=".ForgetPass"
             android:exported="false" />
-
+        <service
+            android:name="com.google.firebase.messaging.FirebaseMessagingService"
+            android:exported="false" />
         <activity
             android:name=".ListStudentActivity"
             android:exported="false" />
