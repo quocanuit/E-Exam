@@ -3,16 +3,18 @@ package com.example.e_exam;
 public class Student {
     private String studentId;
     private String studentName;
+    private String email;
+    private double score; // Thêm điểm số cho học sinh
 
-    public Student() {
-        // Default constructor required for calls to DataSnapshot.getValue(Student.class)
-    }
-
-    public Student(String studentId, String studentName) {
+    // Constructor với tất cả thông tin bao gồm điểm số
+    public Student(String studentId, String studentName, String email) {
         this.studentId = studentId;
         this.studentName = studentName;
+        this.email = email;
+        this.score = score;
     }
 
+    // Getters và setters cho các thuộc tính
     public String getStudentId() {
         return studentId;
     }
@@ -28,5 +30,20 @@ public class Student {
     public void setStudentName(String studentName) {
         this.studentName = studentName;
     }
-}
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public double getScore() {
+        return score;
+    }
+
+    public void setScore(double score) {
+        this.score = score;
+    }
+}

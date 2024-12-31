@@ -74,7 +74,7 @@ public class StudentScoreAdapter extends RecyclerView.Adapter<StudentScoreAdapte
         ScoreViewHolder(View itemView) {
             super(itemView);
             subjectName = itemView.findViewById(R.id.tv_subject_name);
-            iconGrades = itemView.findViewById(R.id.img_grades);
+            //iconGrades = itemView.findViewById(R.id.img_grades);
         }
     }
 }

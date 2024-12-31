@@ -1,33 +1,32 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="16dp"
-    android:background="?android:attr/selectableItemBackground"
-    android:clickable="true">
+    android:orientation="vertical"
+    android:padding="8dp">
 
     <TextView
-        android:id="@+id/tv_subject_name"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Điểm Môn A"
-        android:textSize="18sp"
-        android:textStyle="bold"/>
-
-    <TextView
-        android:id="@+id/tv_score"
+        android:id="@+id/class_name_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="0"
+        android:text="Class Name"
         android:textSize="18sp"
-        android:textStyle="bold"/>
+        android:textColor="@android:color/black"/>
 
-    <ImageView
-        android:id="@+id/img_grades"
-        android:layout_width="97dp"
-        android:layout_height="59dp"
-        android:src="@drawable/grades" />
+    <TextView
+        android:id="@+id/student_name_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Student Name"
+        android:textSize="18sp"
+        android:textColor="@android:color/black"/>
 
+    <TextView
+        android:id="@+id/score_average_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Score Average"
+        android:textSize="18sp"
+        android:textColor="@android:color/black"/>
 </LinearLayout>
+
