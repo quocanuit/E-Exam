@@ -48,7 +48,7 @@
             android:name=".ExamStart"
             android:exported="false" />
         <activity
-            android:name=".ActivityClassStudent"
+            android:name=".RegisterActivity"
             android:exported="false" />
         <activity
             android:name=".StudentGradeActivity"
