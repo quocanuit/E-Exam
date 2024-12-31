@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,6 +23,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 
 public class ClassAdapterStudent extends RecyclerView.Adapter<ClassAdapterStudent.ClassViewHolder> {
+
     private static final String TAG = "ClassAdapterStudent";
     private static final String CLASSES_PATH = "Classes";
     private static final String STUDENTS_PATH = "students";
@@ -36,6 +36,7 @@ public class ClassAdapterStudent extends RecyclerView.Adapter<ClassAdapterStuden
     private final String studentId;
     private final DatabaseReference databaseRef;
 
+
     public interface OnClassJoinListener {
         void onClassJoin(String className, String studentName);
     }
@@ -45,7 +46,7 @@ public class ClassAdapterStudent extends RecyclerView.Adapter<ClassAdapterStuden
         this.context = context;
         this.listener = listener;
         this.studentId = studentId;
-        this.databaseRef = FirebaseDatabase.getInstance().getReference(CLASSES_PATH);
+
     }
 
     @NonNull
@@ -58,6 +59,7 @@ public class ClassAdapterStudent extends RecyclerView.Adapter<ClassAdapterStuden
     @Override
     public void onBindViewHolder(@NonNull ClassViewHolder holder, int position) {
         String className = classList.get(position);
+
         holder.bind(className);
         setupClassClickListener(holder.itemView, className);
     }
@@ -74,6 +76,7 @@ public class ClassAdapterStudent extends RecyclerView.Adapter<ClassAdapterStuden
                 checkStudentClassStatus(className);
             } else {
                 showError("Class name or student ID is invalid.");
+
             }
         });
     }
