@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "firebase-admin": "^11.x.x",
+    "firebase-functions": "^4.x.x",
+    "mailgun-js": "^0.22.0"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "devDependencies": {
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.2"
+  }
+}
