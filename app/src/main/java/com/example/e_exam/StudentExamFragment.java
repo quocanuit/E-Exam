@@ -12,7 +12,6 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.e_exam.adapter.StudentExamListAdapter;
 import com.example.e_exam.model.Answer;
@@ -30,13 +29,14 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 
 public class StudentExamFragment extends Fragment implements StudentExamListAdapter.OnExamClickListener {
     private View mView;
-    private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView recyclerView;
     private Button btnAllExam, btnDoneExam, btnPendingExam;
     private StudentExamListAdapter adapter;
@@ -97,8 +97,6 @@ public class StudentExamFragment extends Fragment implements StudentExamListAdap
         adapter = new StudentExamListAdapter();
         adapter.setOnExamClickListener(this);
         recyclerView.setAdapter(adapter);
-        swipeRefreshLayout = mView.findViewById(R.id.swipeRefresh);
-        swipeRefreshLayout.setOnRefreshListener(this::refreshExamList);
     }
 
     private void refreshExamList() {
@@ -209,58 +207,89 @@ public class StudentExamFragment extends Fragment implements StudentExamListAdap
             FirebaseFirestore db = FirebaseFirestore.getInstance();
             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-            if (currentUser != null) {
-                db.collection("examResults")
-                        .document(exam.getId())
-                        .collection("submissions")
-                        .document(currentUser.getUid())
-                        .get()
-                        .addOnSuccessListener(document -> {
-                            if (document.exists()) {
-                                List<Map<String, Object>> resultMaps = null;
-
-                                // Kiểm tra nếu "results" tồn tại và không null
-                                if (document.get("answers") instanceof List) {
-                                    resultMaps = (List<Map<String, Object>>) document.get("answers");
-                                }
-
-                                String examName = document.getString("examName");
-
-                                if (resultMaps != null && !resultMaps.isEmpty()) {
-                                    ExamResultFragment resultFragment = new ExamResultFragment();
-                                    Bundle args = new Bundle();
-                                    args.putSerializable("answers", new ArrayList<>(resultMaps));
-                                    args.putString("examName", examName);
-                                    args.putBoolean("isViewOnly", true);
-                                    resultFragment.setArguments(args);
-
-                                    requireActivity().getSupportFragmentManager()
-                                            .beginTransaction()
-                                            .replace(R.id.frame_layout, resultFragment)
-                                            .addToBackStack(null)
-                                            .commit();
-                                } else {
-                                    Toast.makeText(
-                                            getContext(),
-                                            "Không có kết quả để hiển thị.",
-                                            Toast.LENGTH_SHORT
-                                    ).show();
-                                }
-                            } else {
-                                Toast.makeText(
-                                        getContext(),
-                                        "Không tìm thấy tài liệu kết quả.",
-                                        Toast.LENGTH_SHORT
-                                ).show();
-                            }
-                        })
-                        .addOnFailureListener(e ->
-                                Toast.makeText(
-                                        getContext(),
-                                        "Lỗi khi tải kết quả: " + e.getMessage(),
-                                        Toast.LENGTH_SHORT
-                                ).show());
+            if (currentUser == null) {
+                Log.e("ExamResult", "No user is currently logged in");
+                Toast.makeText(getContext(), "Vui lòng đăng nhập lại", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            String examId = exam.getId();
+            String userId = currentUser.getUid();
+
+            Log.d("ExamResult", String.format("Fetching result for exam: %s (ID: %s), User: %s",
+                    exam.getName(), examId, userId));
+
+            db.collection("examResults")
+                    .document(examId)
+                    .collection("submissions")
+                    .document(userId)
+                    .get()
+                    .addOnSuccessListener(document -> {
+                        Log.d("ExamResult", "Document retrieved successfully");
+
+                        if (document.exists()) {
+                            Map<String, Object> data = document.getData();
+                            Log.d("ExamResult", "Document data: " + data);
+
+                            @SuppressWarnings("unchecked")
+                            Map<String, Object> answersMap = (Map<String, Object>) document.get("answers");
+
+                            if (answersMap != null && !answersMap.isEmpty()) {
+                                Log.d("ExamResult", "Found " + answersMap.size() + " answers");
+
+                                // Convert to TreeMap with natural number sorting
+                                TreeMap<String, Object> sortedAnswers = new TreeMap<>((s1, s2) -> {
+                                    // Extract numbers from strings (e.g., "question1" -> 1)
+                                    String num1Str = s1.replaceAll("\\D+", "");
+                                    String num2Str = s2.replaceAll("\\D+", "");
+                                    int num1 = Integer.parseInt(num1Str);
+                                    int num2 = Integer.parseInt(num2Str);
+
+                                    // Compare by number of digits first
+                                    if (num1Str.length() != num2Str.length()) {
+                                        return num1Str.length() - num2Str.length();
+                                    }
+
+                                    // If same number of digits, compare by value
+                                    return num1 - num2;
+                                });
+                                sortedAnswers.putAll(answersMap);
+
+                                ExamResultFragment resultFragment = new ExamResultFragment();
+                                Bundle args = new Bundle();
+                                args.putSerializable("resultData", new HashMap<>(sortedAnswers));
+                                args.putString("examName", exam.getName());
+                                args.putString("examId", exam.getId());
+                                resultFragment.setArguments(args);
+
+                                requireActivity().getSupportFragmentManager()
+                                        .beginTransaction()
+                                        .replace(R.id.frame_layout, resultFragment)
+                                        .addToBackStack(null)
+                                        .commit();
+                            } else {
+                                Log.e("ExamResult", "No answers found in document");
+                                Toast.makeText(getContext(),
+                                        "Không tìm thấy câu trả lời trong bài làm",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Log.e("ExamResult", String.format(
+                                    "No submission found for exam %s (ID: %s) and user %s",
+                                    exam.getName(), examId, userId));
+                            Toast.makeText(getContext(),
+                                    "Không tìm thấy bài làm của bạn",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("ExamResult", String.format(
+                                "Error fetching submission for exam %s (ID: %s): %s",
+                                exam.getName(), examId, e.getMessage()), e);
+                        Toast.makeText(getContext(),
+                                "Lỗi khi tải bài làm: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    });
         } else {
             ExamDetailFragment detailFragment = ExamDetailFragment.newInstance(
                     exam.getId(),
