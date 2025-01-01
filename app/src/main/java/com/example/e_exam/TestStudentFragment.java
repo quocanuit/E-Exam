@@ -11,7 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.e_exam.adapter.StudentExamListAdapter;
 import com.example.e_exam.model.StudentExamList;
@@ -39,7 +38,6 @@ public class TestStudentFragment extends Fragment {
     private FirebaseFirestore db;
     private ListenerRegistration examListener;
     private String className;
-    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -70,10 +68,6 @@ public class TestStudentFragment extends Fragment {
         adapter = new StudentExamListAdapter();
         adapter.setOnExamClickListener(this::onExamClick);
         recyclerView.setAdapter(adapter);
-
-        // Thêm SwipeRefreshLayout để refresh danh sách
-        swipeRefreshLayout = view.findViewById(R.id.swipeRefresh);
-        swipeRefreshLayout.setOnRefreshListener(this::refreshExamList);
     }
 
     private void initializeFirebase() {
@@ -123,7 +117,6 @@ public class TestStudentFragment extends Fragment {
                 .orderBy("deadline", Query.Direction.DESCENDING);
 
         examListener = examQuery.addSnapshotListener((value, error) -> {
-            swipeRefreshLayout.setRefreshing(false);
 
             if (error != null) {
                 handleQueryError(error);

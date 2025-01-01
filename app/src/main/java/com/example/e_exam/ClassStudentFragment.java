@@ -51,19 +51,19 @@ public class ClassStudentFragment extends Fragment {
     private void onClickListener() {
         if (cardAssignment != null) {
             cardAssignment.setOnClickListener(v -> {
-                openExamStudentActivity();
+                openExamStudentFragment();
             });
         }
 
         if (cardTest != null) {
             cardTest.setOnClickListener(v -> {
-                openTestStudentActivity();
+                openTestStudentFragment();
             });
         }
     }
 
     // Phương thức mở ExamStudentFragment
-    private void openExamStudentActivity() {
+    private void openExamStudentFragment() {
         ExamStudentFragment fragment = new ExamStudentFragment();
 
         // Gửi dữ liệu vào Fragment thông qua Bundle
@@ -79,7 +79,7 @@ public class ClassStudentFragment extends Fragment {
                 .commit();
     }
 
-    private void openTestStudentActivity() {
+    private void openTestStudentFragment() {
         TestStudentFragment fragment = new TestStudentFragment();
 
         // Gửi dữ liệu vào Fragment thông qua Bundle
