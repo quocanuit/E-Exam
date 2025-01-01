@@ -5,54 +5,82 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.TextView;
-
-import com.example.e_exam.model.Answer;
 import com.example.e_exam.R;
 
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
 
-public class ExamListResultAdapter extends ArrayAdapter<Answer> {
+public class ExamListResultAdapter extends BaseAdapter {
     private Context context;
-    private List<Answer> questions;
+    private ArrayList<Map<String, Object>> questions;
 
-    public ExamListResultAdapter(Context context, List<Answer> questions) {
-        super(context, R.layout.list_result_exam, questions);
+    public ExamListResultAdapter(Context context, ArrayList<Map<String, Object>> questions) {
         this.context = context;
         this.questions = questions;
     }
 
     @Override
+    public int getCount() {
+        return questions.size();
+    }
+
+    @Override
+    public Object getItem(int position) {
+        return questions.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        ViewHolder holder;
+
         if (convertView == null) {
-            convertView = LayoutInflater.from(context)
-                    .inflate(R.layout.list_result_exam, parent, false);
+            convertView = LayoutInflater.from(context).inflate(R.layout.list_result_exam, parent, false);
+            holder = new ViewHolder();
+            holder.tvQuestion = convertView.findViewById(R.id.tv_question);
+            holder.tvSelected = convertView.findViewById(R.id.tv_selected);
+            holder.tvCorrectAnswer = convertView.findViewById(R.id.tv_correct_answer);
+            convertView.setTag(holder);
+        } else {
+            holder = (ViewHolder) convertView.getTag();
         }
 
-        TextView tv_question = convertView.findViewById(R.id.tv_question);
-        TextView tv_selected = convertView.findViewById(R.id.tv_selected);
-        TextView tv_correct_answer = convertView.findViewById(R.id.tv_correct_answer);
+        Map<String, Object> question = questions.get(position);
 
-        Answer answer = questions.get(position);
-        tv_question.setText("Question " + answer.getId());
-        tv_selected.setText(answer.getSelectedAnswer() != null ?
-                answer.getSelectedAnswer() : "X");
-        tv_correct_answer.setText(answer.getCorrectAnswer());
+        String questionId = (String) question.get("questionId");
+        String selected = (String) question.get("selected");
+        String correct = (String) question.get("correct");
 
-        tv_correct_answer.setTextColor(Color.parseColor("#4CAF50")); // Green for all correct answers
+        holder.tvQuestion.setText("Question " + questionId);
+        holder.tvSelected.setText(selected != null ? selected : "X");
+        holder.tvCorrectAnswer.setText(correct);
+
+        // Set color for correct answer
+        holder.tvCorrectAnswer.setTextColor(Color.parseColor("#4CAF50")); // Green
 
         // Set color for selected answer
-        if (answer.getSelectedAnswer() != null) {
-            if (answer.getSelectedAnswer().equals(answer.getCorrectAnswer())) {
-                tv_selected.setTextColor(Color.parseColor("#4CAF50")); // Green
+        if (selected != null) {
+            if (selected.equals(correct)) {
+                holder.tvSelected.setTextColor(Color.parseColor("#4CAF50")); // Green
             } else {
-                tv_selected.setTextColor(Color.parseColor("#F44336")); // Red
+                holder.tvSelected.setTextColor(Color.parseColor("#F44336")); // Red
             }
         } else {
-            tv_selected.setTextColor(Color.parseColor("#F44336")); // Red for no answer
+            holder.tvSelected.setTextColor(Color.parseColor("#F44336")); // Red for no answer
         }
 
         return convertView;
+    }
+
+    static class ViewHolder {
+        TextView tvQuestion;
+        TextView tvSelected;
+        TextView tvCorrectAnswer;
     }
 }

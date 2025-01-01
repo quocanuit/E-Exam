@@ -4,6 +4,7 @@ import java.io.Serializable;  // Thêm import Serializable
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class StudentExamList implements Serializable {  // Thêm implements Serializable
     private String id;
@@ -82,7 +83,29 @@ public class StudentExamList implements Serializable {  // Thêm implements Seri
 
     // Phương thức để hiển thị ngày tháng
     public String getFormattedDate() {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        return "Deadline: " + sdf.format(new Date(dueDate * 1000));
+        // Kiểm tra dueDate có giá trị hợp lệ
+        if (dueDate <= 0) {
+            return "Deadline: N/A";
+        }
+
+        try {
+            // Tạo đối tượng SimpleDateFormat với pattern cụ thể
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/yyyy", Locale.getDefault());
+
+            // Thiết lập múi giờ Việt Nam
+            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+
+            // Chuyển đổi timestamp sang milliseconds nếu cần
+            long timestampInMillis = dueDate;
+            if (String.valueOf(dueDate).length() <= 10) {
+                timestampInMillis = dueDate * 1000; // Chuyển từ seconds sang milliseconds
+            }
+
+            // Format ngày tháng
+            return "Deadline: " + sdf.format(new Date(timestampInMillis));
+        } catch (Exception e) {
+            // Xử lý ngoại lệ nếu có lỗi khi format
+            return "Deadline: Error";
+        }
     }
 }
