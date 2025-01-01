@@ -14,6 +14,8 @@ public class StudentExamList implements Serializable {  // Thêm implements Seri
     private long dueDate;
     private String pdfUrl;
     private String answerUrl;
+    private int score;
+    private long submittedAt;
 
     // Constructor
     public StudentExamList(String className, String name, String status, long dueDate, String id) {
@@ -79,6 +81,22 @@ public class StudentExamList implements Serializable {  // Thêm implements Seri
 
     public void setAnswerUrl(String answerUrl) {
         this.answerUrl = answerUrl;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
+
+    public long getSubmittedAt() {
+        return submittedAt;
+    }
+
+    public void setSubmittedAt(long submittedAt) {
+        this.submittedAt = submittedAt;
     }
 
     // Phương thức để hiển thị ngày tháng

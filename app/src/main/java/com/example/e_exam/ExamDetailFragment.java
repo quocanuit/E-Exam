@@ -4,6 +4,7 @@ import static android.content.ContentValues.TAG;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -29,6 +30,8 @@ import com.example.e_exam.model.Question;
 import com.github.barteksc.pdfviewer.PDFView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -210,7 +213,6 @@ public class ExamDetailFragment extends Fragment {
 
                 @Override
                 public void onFinish() {
-                    timerDueText.setText("Time's up!");
                     submitButton.setEnabled(false);
 
                     // Hiển thị ProgressDialog
@@ -225,7 +227,6 @@ public class ExamDetailFragment extends Fragment {
                 }
             }.start();
         } else {
-            timerDueText.setText("Expired");
             submitButton.setEnabled(false);
         }
     }
@@ -301,11 +302,25 @@ public class ExamDetailFragment extends Fragment {
     }
 
     private void downloadAndCheckAnswers(String answerUrl) {
+        if (getActivity() == null) return;
+
+        // Kiểm tra answerUrl
+        if (answerUrl == null || answerUrl.isEmpty()) {
+            Toast.makeText(getContext(), "Answer URL is invalid", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         ProgressDialog progressDialog = new ProgressDialog(getContext());
-        progressDialog.setMessage("Checking answers...");
+        progressDialog.setMessage("Đang nộp bài ...");
+        progressDialog.setCancelable(false);
         progressDialog.show();
 
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .build();
+
         Request request = new Request.Builder()
                 .url(answerUrl)
                 .build();
@@ -313,7 +328,7 @@ public class ExamDetailFragment extends Fragment {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if (!response.isSuccessful()) {
+                if (!response.isSuccessful() || response.body() == null) {
                     handleError(progressDialog, "Failed to download answer file");
                     return;
                 }
@@ -322,42 +337,42 @@ public class ExamDetailFragment extends Fragment {
                     Map<Integer, String> userAnswers = questionMutipleChoiceAdapter.getUserAnswers();
                     List<Answer> results = processAnswers(response.body().byteStream(), userAnswers);
 
-                    String examId = getArguments().getString("id");
+                    String examId = getArguments().getString("id"); // Sửa từ "questionId" thành "id"
                     FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-                    if (examId != null && currentUser != null) {
-                        List<Map<String, Object>> resultMap = new ArrayList<>();
-                        for (Answer answer : results) {
-                            Map<String, Object> answerMap = new HashMap<>();
-                            answerMap.put("id", answer.getId());
-                            answerMap.put("selectedAnswer", answer.getSelectedAnswer());
-                            answerMap.put("correctAnswer", answer.getCorrectAnswer());
-                            resultMap.add(answerMap);
-                        }
-
-                        Map<String, Object> examResult = new HashMap<>();
-                        examResult.put("results", resultMap);
-                        examResult.put("completedAt", System.currentTimeMillis());
-                        examResult.put("score", calculateScore(results));
-                        examResult.put("userId", currentUser.getUid());
-                        examResult.put("examName", getArguments().getString("name"));
-
-                        // Cập nhật trạng thái và lưu kết quả
-                        db.collection("exams").document(examId)
-                                .update("status", "completed")
-                                .addOnSuccessListener(aVoid -> {
-                                    db.collection("examResults")
-                                            .document(examId + "_" + currentUser.getUid())
-                                            .set(examResult)
-                                            .addOnSuccessListener(documentReference -> {
-                                                showResults(resultMap, progressDialog);
-                                            })
-                                            .addOnFailureListener(e -> handleError(progressDialog,
-                                                    "Error saving results: " + e.getMessage()));
-                                })
-                                .addOnFailureListener(e -> handleError(progressDialog,
-                                        "Error updating exam status: " + e.getMessage()));
+                    if (examId == null || currentUser == null) {
+                        handleError(progressDialog, "Missing exam ID or user not logged in");
+                        return;
                     }
+
+                    List<Map<String, Object>> answerList = new ArrayList<>();
+                    for (Answer answer : results) {
+                        Map<String, Object> answerMap = new HashMap<>();
+                        answerMap.put("questionId", answer.getId());
+                        answerMap.put("selected", answer.getSelectedAnswer());
+                        answerMap.put("correct", answer.getCorrectAnswer());
+                        answerList.add(answerMap);
+                    }
+
+                    long submittedAt = System.currentTimeMillis();
+                    int score = calculateScore(results);
+
+                    Map<String, Object> submissionData = new HashMap<>();
+                    submissionData.put("answers", answerList);
+                    submissionData.put("score", score);
+                    submissionData.put("submittedAt", submittedAt);
+                    submissionData.put("userId", currentUser.getUid());
+
+                    if (getActivity() == null) {
+                        progressDialog.dismiss();
+                        return;
+                    }
+
+                    getActivity().runOnUiThread(() -> {
+                        // Cập nhật Firestore và Realtime Database
+                        saveSubmissionData(examId, currentUser.getUid(), submissionData, answerList, progressDialog);
+                    });
+
                 } catch (Exception e) {
                     handleError(progressDialog, "Error processing answers: " + e.getMessage());
                 }
@@ -368,6 +383,47 @@ public class ExamDetailFragment extends Fragment {
                 handleError(progressDialog, "Error downloading answer file: " + e.getMessage());
             }
         });
+    }
+
+    private void saveSubmissionData(String examId, String userId, Map<String, Object> submissionData,
+                                    List<Map<String, Object>> answerList, ProgressDialog progressDialog) {
+        // Tạo một document riêng để lưu trạng thái làm bài của từng user
+        Map<String, Object> userExamStatus = new HashMap<>();
+        userExamStatus.put("status", "completed");
+        userExamStatus.put("submittedAt", System.currentTimeMillis());
+
+        // Lưu trạng thái làm bài của user
+        db.collection("exams")
+                .document(examId)
+                .collection("userStatus")
+                .document(userId)
+                .set(userExamStatus)
+                .addOnSuccessListener(aVoid -> {
+                    // Lưu kết quả vào Firestore
+                    db.collection("examResults")
+                            .document(examId)
+                            .collection("submissions")
+                            .document(userId)
+                            .set(submissionData)
+                            .addOnSuccessListener(documentReference -> {
+                                // Lưu kết quả vào Realtime Database
+                                DatabaseReference realtimeRef = FirebaseDatabase.getInstance()
+                                        .getReference("test_submissions")
+                                        .child(examId)
+                                        .child(userId);
+
+                                realtimeRef.setValue(submissionData)
+                                        .addOnSuccessListener(unused -> {
+                                            showResults(answerList, progressDialog);
+                                        })
+                                        .addOnFailureListener(e -> handleError(progressDialog,
+                                                "Error saving to Realtime DB: " + e.getMessage()));
+                            })
+                            .addOnFailureListener(e -> handleError(progressDialog,
+                                    "Error saving to Firestore: " + e.getMessage()));
+                })
+                .addOnFailureListener(e -> handleError(progressDialog,
+                        "Error updating user exam status: " + e.getMessage()));
     }
 
     private void checkAnswers(Uri excelFileUri) {
@@ -464,14 +520,32 @@ public class ExamDetailFragment extends Fragment {
         return correct;
     }
 
-    private void showResults(List<Map<String, Object>> resultMaps, ProgressDialog progressDialog) {
-        if (!isAdded()) return; // Kiểm tra xem fragment đã được thêm vào hay chưa)
+    private void showResults(List<Map<String, Object>> answerList, ProgressDialog progressDialog) {
+        if (!isAdded()) return;
+
         requireActivity().runOnUiThread(() -> {
             progressDialog.dismiss();
+
+            // Create resultData map với cấu trúc phù hợp
+            Map<String, Object> resultData = new HashMap<>();
+
+            for (int i = 0; i < answerList.size(); i++) {
+                Map<String, Object> questionData = new HashMap<>();
+                Map<String, Object> answer = answerList.get(i);
+
+                questionData.put("questionId", String.valueOf(i + 1));
+                questionData.put("selected", answer.get("selected"));
+                questionData.put("correct", answer.get("correct"));
+
+                resultData.put("question_" + (i + 1), questionData);
+            }
+
+            // Chuyển sang ExamResultFragment
             ExamResultFragment resultFragment = new ExamResultFragment();
             Bundle args = new Bundle();
-            args.putSerializable("results", new ArrayList<>(resultMaps));
+            args.putSerializable("resultData", (HashMap<String, Object>) resultData);
             args.putString("examName", getArguments().getString("name", "Exam"));
+            args.putString("className", getArguments().getString("className", "Class"));
             resultFragment.setArguments(args);
 
             requireActivity().getSupportFragmentManager()

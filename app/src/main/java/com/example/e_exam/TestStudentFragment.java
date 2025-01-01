@@ -28,8 +28,10 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class TestStudentFragment extends Fragment {
     private RecyclerView recyclerView;
@@ -147,7 +149,6 @@ public class TestStudentFragment extends Fragment {
 
                 exam.setPdfUrl(document.getString("pdfUrl"));
                 exam.setAnswerUrl(document.getString("answerUrl"));
-                //exam.setTeacherId(document.getString("teacherId"));
 
                 // Kiểm tra deadline
                 Long deadline = document.getLong("deadline");
@@ -158,6 +159,7 @@ public class TestStudentFragment extends Fragment {
                     }
                 }
 
+                checkExamCompletion(exam);
                 newExamList.add(exam);
             } catch (Exception e) {
                 Log.e("StudentExamFragment", "Error processing exam " + document.getId(), e);
@@ -177,6 +179,59 @@ public class TestStudentFragment extends Fragment {
         }
     }
 
+    private void checkExamCompletion(StudentExamList exam) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            db.collection("exams")
+                    .document(exam.getId())
+                    .collection("userStatus")
+                    .document(currentUser.getUid())
+                    .get()
+                    .addOnSuccessListener(userStatusDoc -> {
+                        if (userStatusDoc.exists() && "completed".equals(userStatusDoc.getString("status"))) {
+                            db.collection("examResults")
+                                    .document(exam.getId())
+                                    .collection("submissions")
+                                    .document(currentUser.getUid())
+                                    .get()
+                                    .addOnSuccessListener(resultDoc -> {
+                                        if (resultDoc.exists()) {
+                                            exam.setStatus("completed");
+                                            Long score = resultDoc.getLong("score");
+                                            if (score != null) {
+                                                exam.setScore(score.intValue());
+                                            }
+                                            Long submittedAt = resultDoc.getLong("submittedAt");
+                                            if (submittedAt != null) {
+                                                exam.setSubmittedAt(submittedAt);
+                                            }
+                                        } else {
+                                            exam.setStatus("error");
+                                        }
+                                        adapter.notifyDataSetChanged();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.e("ExamStatus", "Error checking exam results", e);
+                                        exam.setStatus("pending");
+                                        adapter.notifyDataSetChanged();
+                                    });
+                        } else {
+                            if (exam.getDueDate() < System.currentTimeMillis()) {
+                                exam.setStatus("expired");
+                            } else {
+                                exam.setStatus("pending");
+                            }
+                            adapter.notifyDataSetChanged();
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("ExamStatus", "Error checking user status", e);
+                        exam.setStatus("error");
+                        adapter.notifyDataSetChanged();
+                    });
+        }
+    }
+
     private void handleQueryError(FirebaseFirestoreException error) {
         String errorMessage;
         if (error.getCode() == FirebaseFirestoreException.Code.UNAVAILABLE) {
@@ -187,14 +242,6 @@ public class TestStudentFragment extends Fragment {
             errorMessage = "Lỗi: " + error.getMessage();
         }
         showError(errorMessage);
-    }
-
-    private void refreshExamList() {
-        if (className != null) {
-            loadExams(className);
-        } else {
-            showError("Không có thông tin lớp học");
-        }
     }
 
     private void showError(String message) {
@@ -220,33 +267,85 @@ public class TestStudentFragment extends Fragment {
     }
 
     private void loadExamResult(StudentExamList exam) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (currentUser == null) {
+            Log.e("ExamResult", "No user is currently logged in");
+            Toast.makeText(getContext(), "Vui lòng đăng nhập lại", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String examId = exam.getId();
+        String userId = currentUser.getUid();
+
+        Log.d("ExamResult", String.format("Fetching result for exam: %s (ID: %s), User: %s",
+                exam.getName(), examId, userId));
+
         db.collection("examResults")
-                .document(exam.getId() + "_" + className)
+                .document(examId)
+                .collection("submissions")
+                .document(userId)
                 .get()
                 .addOnSuccessListener(document -> {
-                    if (document.exists()) {
-                        List<Map<String, Object>> resultMaps = (List<Map<String, Object>>) document.get("results");
-                        String examName = document.getString("examName");
+                    Log.d("ExamResult", "Document retrieved successfully");
 
-                        openResultFragment(resultMaps, examName);
+                    if (document.exists()) {
+                        Map<String, Object> data = document.getData();
+                        Log.d("ExamResult", "Document data: " + data);
+
+                        @SuppressWarnings("unchecked")
+                        ArrayList<Map<String, Object>> answersList = (ArrayList<Map<String, Object>>) document.get("answers");
+
+                        if (answersList != null && !answersList.isEmpty()) {
+                            Log.d("ExamResult", "Found " + answersList.size() + " answers");
+
+                            // Convert answers to the format expected by ExamResultFragment
+                            Map<String, Object> resultData = new HashMap<>();
+                            for (Map<String, Object> answer : answersList) {
+                                String questionId = String.valueOf(answer.get("questionId"));
+                                Map<String, Object> questionData = new HashMap<>();
+                                questionData.put("questionId", questionId);
+                                questionData.put("selected", answer.get("selected"));
+                                questionData.put("correct", answer.get("correct"));
+                                resultData.put("question_" + questionId, questionData);
+                            }
+
+                            ExamResultFragment resultFragment = new ExamResultFragment();
+                            Bundle args = new Bundle();
+                            args.putSerializable("resultData", new HashMap<>(resultData));
+                            args.putString("examName", exam.getName());
+                            args.putString("examId", exam.getId());
+                            resultFragment.setArguments(args);
+
+                            requireActivity().getSupportFragmentManager()
+                                    .beginTransaction()
+                                    .replace(R.id.frame_layout, resultFragment)
+                                    .addToBackStack(null)
+                                    .commit();
+                        } else {
+                            Log.e("ExamResult", "No answers found in document");
+                            Toast.makeText(getContext(),
+                                    "Không tìm thấy câu trả lời trong bài làm",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Log.e("ExamResult", String.format(
+                                "No submission found for exam %s (ID: %s) and user %s",
+                                exam.getName(), examId, userId));
+                        Toast.makeText(getContext(),
+                                "Không tìm thấy bài làm của bạn",
+                                Toast.LENGTH_SHORT).show();
                     }
                 })
-                .addOnFailureListener(e -> showError("Lỗi tải kết quả: " + e.getMessage()));
-    }
-
-    private void openResultFragment(List<Map<String, Object>> resultMaps, String examName) {
-        ExamResultFragment resultFragment = new ExamResultFragment();
-        Bundle args = new Bundle();
-        args.putSerializable("results", new ArrayList<>(resultMaps));
-        args.putString("examName", examName);
-        args.putBoolean("isViewOnly", true);
-        resultFragment.setArguments(args);
-
-        requireActivity().getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.frame_layout, resultFragment)
-                .addToBackStack(null)
-                .commit();
+                .addOnFailureListener(e -> {
+                    Log.e("ExamResult", String.format(
+                            "Error fetching submission for exam %s (ID: %s): %s",
+                            exam.getName(), examId, e.getMessage()), e);
+                    Toast.makeText(getContext(),
+                            "Lỗi khi tải bài làm: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void openExamDetail(StudentExamList exam) {
