@@ -3,6 +3,7 @@ package com.example.e_exam;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,9 +16,9 @@ import com.example.e_exam.databinding.ActivityStudentBinding;
 import com.example.e_exam.user.UserFragment;
 
 public class StudentActivity extends AppCompatActivity {
-
     ActivityStudentBinding binding;
     private String studentID;
+
     @SuppressLint("NonConstantResourceId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,15 +60,16 @@ public class StudentActivity extends AppCompatActivity {
         return true;
     }
 
-    public void showPdfContent(String fileLink) {
-        Intent intent = new Intent(this, ExamResultFragment.class);
-        intent.putExtra("fileLink", fileLink);
-        startActivity(intent);
+    public void setBottomNavigationVisibility(int visibility) {
+        binding.bottomNavigationView.setVisibility(visibility);
     }
 
-    public void showDashboardScore(int score) {
-        Intent intent = new Intent(this, ExamResultFragment.class);
-        intent.putExtra("score", score);
-        startActivity(intent);
+    public void refreshExamList() {
+        // Refresh the exam list in StudentExamFragment
+        StudentExamFragment examFragment = (StudentExamFragment) getSupportFragmentManager()
+                .findFragmentByTag("student_exam_fragment");
+        if (examFragment != null) {
+            examFragment.loadExams(studentID);
+        }
     }
 }

@@ -32,6 +32,10 @@ public class StudentClassFragment extends Fragment implements ClassAdapterStuden
     private DatabaseReference databaseReference;
     private String studentId;
 
+    public StudentClassFragment() {
+        // Required empty public constructor
+    }
+
     public StudentClassFragment(String studentId) {
         this.studentId = studentId; // Nhận studentId từ intent
     }
