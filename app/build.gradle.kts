@@ -67,7 +67,6 @@ dependencies {
     implementation("com.google.firebase:firebase-appcheck-playintegrity:17.1.1")
     implementation("com.google.firebase:firebase-appcheck-debug:17.1.1")
     implementation("com.squareup.okhttp3:okhttp:4.9.1")
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }
 
 

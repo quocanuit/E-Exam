@@ -10,7 +10,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,33 +24,29 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExamStudentFragment extends Fragment {
+public class ExamStudent extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private ExamAdapter examAdapter;
     private List<Exam> examList;
     private String className;
-    private String studentId;
-
+    private String StudentId;
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_exam_student, container, false); // Đảm bảo tên file layout đúng
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.fragment_exam_student); // Đảm bảo tên file layout đúng
 
-        recyclerView = view.findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
         examList = new ArrayList<>();
-        examAdapter = new ExamAdapter(examList, getContext());
+        examAdapter = new ExamAdapter(examList, this);
         recyclerView.setAdapter(examAdapter);
 
-        // Nhận giá trị className và StudentId từ Bundle
-        Bundle arguments = getArguments();
-        if (arguments != null) {
-            className = arguments.getString("CLASS_NAME");
-            studentId = arguments.getString("StudentId");
-        }
-
-        // Lấy dữ liệu từ Firebase
+        // Nhận giá trị className từ Intent
+        className = getIntent().getStringExtra("CLASS_NAME");
+        StudentId = getIntent().getStringExtra("StudentId");
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("exams");
+
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -69,8 +66,6 @@ public class ExamStudentFragment extends Fragment {
                 Log.e("ExamStudent", "Failed to read exams", databaseError.toException());
             }
         });
-
-        return view;
     }
 
     private static class Exam {
@@ -115,7 +110,7 @@ public class ExamStudentFragment extends Fragment {
                 Intent intent = new Intent(context, ExamStart.class);
                 intent.putExtra("CLASS_NAME", className);
                 intent.putExtra("EXAM_NAME", exam.name);
-                intent.putExtra("StudentId", studentId);
+                intent.putExtra("StudentId", StudentId);
                 context.startActivity(intent);
             });
         }

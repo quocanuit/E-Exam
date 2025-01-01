@@ -16,16 +16,10 @@ import com.example.e_exam.model.StudentExamList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class StudentExamListAdapter extends RecyclerView.Adapter<StudentExamListAdapter.ViewHolder> {
     private final List<StudentExamList> examList = new ArrayList<>();  // Changed to private final
-    private List<StudentExamList> allExamsList = new ArrayList<>();  // Changed to private>
     private OnExamClickListener listener;
-
-    private boolean showAllButton = true;
-    private boolean showDoneButton = true;
-    private boolean showPendingButton = true;
 
     public interface OnExamClickListener {
         void onExamClick(StudentExamList exam);
@@ -35,47 +29,10 @@ public class StudentExamListAdapter extends RecyclerView.Adapter<StudentExamList
         this.listener = listener;
     }
 
-    public void addExams(List<StudentExamList> exams) {
-        this.examList.addAll(exams);
-        this.allExamsList.addAll(exams);
-        notifyDataSetChanged();
-    }
-
-    public void clearExams() {
-        this.examList.clear();
-        this.allExamsList.clear();
-        notifyDataSetChanged();
-    }
-
-    public void showAllExams() {
-        examList.clear();
-        examList.addAll(allExamsList);
-        notifyDataSetChanged();
-    }
-
-    public void filterExams(boolean completed) {
-        examList.clear();
-        examList.addAll(allExamsList.stream()
-                .filter(exam -> completed ?
-                        "completed".equals(exam.getStatus()) :
-                        !"completed".equals(exam.getStatus()))
-                .collect(Collectors.toList()));
-        notifyDataSetChanged();
-    }
-
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_student_exam, parent, false);
-
-        View btnAll = parent.getRootView().findViewById(R.id.btnAllExam);
-        View btnDone = parent.getRootView().findViewById(R.id.btnDoneExam);
-        View btnPending = parent.getRootView().findViewById(R.id.btnPendingExam);
-
-        if (btnAll != null) btnAll.setVisibility(showAllButton ? View.VISIBLE : View.GONE);
-        if (btnDone != null) btnDone.setVisibility(showDoneButton ? View.VISIBLE : View.GONE);
-        if (btnPending != null) btnPending.setVisibility(showPendingButton ? View.VISIBLE : View.GONE);
-
         return new ViewHolder(view, listener, examList);
     }
 
@@ -83,18 +40,6 @@ public class StudentExamListAdapter extends RecyclerView.Adapter<StudentExamList
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         StudentExamList exam = examList.get(position);
         holder.bind(exam);
-
-        if ("completed".equals(exam.getStatus())) {
-            holder.itemView.findViewById(R.id.examButton)
-                    .setBackgroundColor(Color.parseColor("#4CAF50")); // Green
-            holder.itemView.findViewById(R.id.examButton)
-                    .setEnabled(true);
-        } else {
-            holder.itemView.findViewById(R.id.examButton)
-                    .setBackgroundColor(Color.parseColor("#65558F")); // Primary
-            holder.itemView.findViewById(R.id.examButton)
-                    .setEnabled(true);
-        }
     }
 
     @Override
@@ -102,14 +47,30 @@ public class StudentExamListAdapter extends RecyclerView.Adapter<StudentExamList
         return examList.size();
     }
 
+    public void addExams(List<StudentExamList> newExams) {
+        int startPosition = examList.size();
+        examList.addAll(newExams);
+        notifyItemRangeInserted(startPosition, newExams.size());
+    }
+
+    // Add method to clear the list if needed
+    public void clearExams() {
+        examList.clear();
+        notifyDataSetChanged();
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView classNameTextView;
         private final TextView nameTextView;
         private final TextView dueTextView;
         private final Button examButton;
+        private final List<StudentExamList> examList;
+        private final OnExamClickListener listener;
 
         public ViewHolder(View itemView, OnExamClickListener listener, List<StudentExamList> examList) {
             super(itemView);
+            this.listener = listener;
+            this.examList = examList;
 
             classNameTextView = itemView.findViewById(R.id.classNameTextView);
             nameTextView = itemView.findViewById(R.id.nameTextView);

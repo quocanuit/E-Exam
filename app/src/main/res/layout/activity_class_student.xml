@@ -57,7 +57,7 @@
 
     <!-- CardView cho Thông báo -->
     <androidx.cardview.widget.CardView
-        android:id="@+id/card_test_student"
+        android:id="@+id/card_notification"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/card_assignment_student"
@@ -75,27 +75,22 @@
             android:padding="16dp">
 
             <ImageView
-                android:id="@+id/image_test1"
+                android:id="@+id/image_test"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:src="@drawable/assignment"
-                android:layout_alignParentStart="true"/>
+                android:layout_alignParentStart="true"
+                android:src="@drawable/assignment" />
 
             <TextView
-                android:id="@+id/text_test_student"
+                android:id="@+id/text_test"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/image_test1"
                 android:layout_marginStart="16dp"
-                android:text="Bài kiểm tra"
-                android:textSize="18sp"
-                android:textColor="@android:color/black"/>
+                android:layout_toEndOf="@id/image_test"
+                android:text="Bài Kiểm tra"
+                android:textColor="@android:color/black"
+                android:textSize="18sp" />
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
-
-    <FrameLayout
-        android:id="@+id/frame_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
 
 </RelativeLayout>
