@@ -15,21 +15,7 @@
             android:id="@+id/tv_topic"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="Bài kiểm tra"
-            android:textStyle="bold"
-            android:textAlignment="center" />
-
-    </com.google.android.material.card.MaterialCardView>
-
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-
-        <TextView
-            android:id="@+id/tv_score"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="Điểm"
+            android:text="Topic"
             android:textStyle="bold"
             android:textAlignment="center" />
 
@@ -51,7 +37,7 @@
                 android:layout_height="match_parent"
                 android:textAlignment="center"
                 android:textStyle="bold"
-                android:text="Câu hỏi" />
+                android:text="Question" />
 
         </com.google.android.material.card.MaterialCardView>
 
@@ -66,7 +52,7 @@
                 android:layout_height="match_parent"
                 android:textAlignment="center"
                 android:textStyle="bold"
-                android:text="Đã chọn" />
+                android:text="Selected" />
 
         </com.google.android.material.card.MaterialCardView>
 
@@ -81,7 +67,7 @@
                 android:layout_height="match_parent"
                 android:textAlignment="center"
                 android:textStyle="bold"
-                android:text="Đáp án" />
+                android:text="Correct Answer" />
 
         </com.google.android.material.card.MaterialCardView>
 

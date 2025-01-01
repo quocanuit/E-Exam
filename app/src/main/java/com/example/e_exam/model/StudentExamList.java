@@ -4,7 +4,6 @@ import java.io.Serializable;  // Thêm import Serializable
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.TimeZone;
 
 public class StudentExamList implements Serializable {  // Thêm implements Serializable
     private String id;
@@ -84,7 +83,6 @@ public class StudentExamList implements Serializable {  // Thêm implements Seri
     // Phương thức để hiển thị ngày tháng
     public String getFormattedDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
-        return "Deadline: " + sdf.format(new Date(dueDate));
+        return "Deadline: " + sdf.format(new Date(dueDate * 1000));
     }
 }

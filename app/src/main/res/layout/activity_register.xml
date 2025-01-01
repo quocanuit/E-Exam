@@ -129,9 +129,9 @@
             android:layout_height="50dp"
             android:layout_marginBottom="16dp"
             android:backgroundTint="#6B44C8"
-            android:padding="10dp"
+            android:padding="12dp"
             android:text="REGISTER"
-            android:textSize="20sp"
+            android:textSize="23dp"
             android:textColor="#FFFFFF" />
 
         <TextView

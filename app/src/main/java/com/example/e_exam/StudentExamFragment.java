@@ -5,14 +5,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.e_exam.adapter.StudentExamListAdapter;
 import com.example.e_exam.model.Answer;
@@ -28,42 +26,28 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-
 public class StudentExamFragment extends Fragment implements StudentExamListAdapter.OnExamClickListener {
-    private View mView;
-    private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView recyclerView;
-    private Button btnAllExam, btnDoneExam, btnPendingExam;
     private StudentExamListAdapter adapter;
     private List<StudentExamList> examList;
     private FirebaseFirestore db;
     private ListenerRegistration examListener;
+    private String currentUserId;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mView = inflater.inflate(R.layout.fragment_student_exam, container, false);
+        View view = inflater.inflate(R.layout.fragment_student_exam, container, false);
 
-        initUI();
         initializeFirebase();
-        onClickListener();
+        initializeRecyclerView(view);
 
-        return mView;
-    }
-
-    private void initUI(){
-        btnAllExam = mView.findViewById(R.id.btnAllExam);
-        btnDoneExam = mView.findViewById(R.id.btnDoneExam);
-        btnPendingExam = mView.findViewById(R.id.btnPendingExam);
-        initializeRecyclerView(mView);
-
-        btnAllExam.setSelected(true);
-        btnDoneExam.setSelected(false);
-        btnPendingExam.setSelected(false);
+        return view;
     }
 
     private void initializeFirebase() {
@@ -77,9 +61,9 @@ public class StudentExamFragment extends Fragment implements StudentExamListAdap
             userRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    String studentUid = snapshot.child("uid").getValue(String.class);
-                    // Sử dụng studentUid để query FireStore
-                    loadExams(studentUid);
+                    String customUid = snapshot.child("uid").getValue(String.class);
+                    // Sử dụng customUid để query Firestore
+                    loadExams(customUid);
                 }
 
                 @Override
@@ -97,49 +81,14 @@ public class StudentExamFragment extends Fragment implements StudentExamListAdap
         adapter = new StudentExamListAdapter();
         adapter.setOnExamClickListener(this);
         recyclerView.setAdapter(adapter);
-        swipeRefreshLayout = mView.findViewById(R.id.swipeRefresh);
-        swipeRefreshLayout.setOnRefreshListener(this::refreshExamList);
     }
 
-    private void refreshExamList() {
-        if (examListener != null) {
-            examListener.remove();
-        }
-        if (examList != null) {
-            adapter.clearExams();
-            adapter.addExams(examList);
-        }
-    }
+    private void loadExams(String customUid) {
+        Log.d("StudentExamFragment", "Current user ID: " + customUid);
 
-    private void onClickListener(){
-        btnAllExam.setOnClickListener(v -> {
-            updateButtonStates(btnAllExam);
-            adapter.showAllExams();
-        });
-
-        btnDoneExam.setOnClickListener(v -> {
-            updateButtonStates(btnDoneExam);
-            adapter.filterExams(true); // true for completed exams
-        });
-
-        btnPendingExam.setOnClickListener(v -> {
-            updateButtonStates(btnPendingExam);
-            adapter.filterExams(false); // false for pending exams
-        });
-    }
-
-    private void updateButtonStates(Button selectedButton) {
-        btnAllExam.setSelected(false);
-        btnDoneExam.setSelected(false);
-        btnPendingExam.setSelected(false);
-        selectedButton.setSelected(true);
-    }
-
-    public void loadExams(String studentUid) {
+        // Kiểm tra các bài thi có trong mảng studentIds mà có studentId giống currentUserId
         Query examQuery = db.collection("exams")
-                .whereArrayContains("studentIds", studentUid)
-                .orderBy("deadline", Query.Direction.ASCENDING)
-                .orderBy("className", Query.Direction.ASCENDING);
+                .whereArrayContains("studentIds", customUid);
 
         examListener = examQuery.addSnapshotListener((value, error) -> {
             if (error != null) {
@@ -147,8 +96,16 @@ public class StudentExamFragment extends Fragment implements StudentExamListAdap
                 return;
             }
 
+            if (value == null || value.isEmpty()) {
+                Log.d("StudentExamFragment", "No exams found for user: " + customUid);
+                return;
+            }
+
             List<StudentExamList> newExamList = new ArrayList<>();
             for (DocumentSnapshot document : value.getDocuments()) {
+                Log.d("StudentExamFragment", "Processing exam: " + document.getId());
+                Log.d("StudentExamFragment", "Data: " + document.getData());
+
                 try {
                     String id = document.getId();
                     String name = document.getString("name");
@@ -158,15 +115,11 @@ public class StudentExamFragment extends Fragment implements StudentExamListAdap
                     String pdfUrl = document.getString("pdfUrl");
                     String answerUrl = document.getString("answerUrl");
 
-                    if (deadline != null) {
-                        StudentExamList exam = new StudentExamList(className, name, status, deadline, id);
-                        exam.setPdfUrl(pdfUrl);
-                        exam.setAnswerUrl(answerUrl);
+                    StudentExamList exam = new StudentExamList(className, name, status, deadline, id);
+                    exam.setPdfUrl(pdfUrl);
+                    exam.setAnswerUrl(answerUrl);
+                    newExamList.add(exam);
 
-                        checkExamCompletion(exam);
-
-                        newExamList.add(exam);
-                    }
                 } catch (Exception e) {
                     Log.e("StudentExamFragment", "Error processing exam " + document.getId(), e);
                 }
@@ -175,23 +128,38 @@ public class StudentExamFragment extends Fragment implements StudentExamListAdap
             examList = newExamList;
             adapter.clearExams();
             adapter.addExams(examList);
+            updateExamList(value);
+            Log.d("StudentExamFragment", "Updated adapter with " + examList.size() + " items");
         });
     }
 
-    private void checkExamCompletion(StudentExamList exam) {
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser != null) {
-            db.collection("examResults")
-                    .document(exam.getId())
-                    .collection("submissions")
-                    .document(currentUser.getUid())
-                    .get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            exam.setStatus("completed");
-                            adapter.notifyDataSetChanged();
-                        }
-                    });
+
+    private void updateExamList(QuerySnapshot snapshots) {
+        examList = new ArrayList<>();
+        for (DocumentSnapshot doc : snapshots.getDocuments()) {
+            String id = doc.getId();
+            String name = doc.getString("name");
+            String className = doc.getString("className");
+            String status = doc.getString("status");
+            Long deadline = doc.getLong("deadline");
+            String pdfUrl = doc.getString("pdfUrl");
+            String answerUrl = doc.getString("answerUrl");
+
+            if (name != null && className != null) {
+                StudentExamList exam = new StudentExamList(className, name, status, deadline, id);
+                exam.setPdfUrl(pdfUrl);
+                exam.setAnswerUrl(answerUrl);
+                examList.add(exam);
+            }
+        }
+
+        adapter.clearExams();
+        if (examList != null && !examList.isEmpty()) {
+            Log.d("StudentExamFragment", "Adding " + examList.size() + " exams to adapter");
+            adapter.addExams(examList);
+        } else {
+            Log.d("StudentExamFragment", "No exams to display");
+            Toast.makeText(getContext(), "Không có bài kiểm tra nào", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -211,64 +179,41 @@ public class StudentExamFragment extends Fragment implements StudentExamListAdap
 
             if (currentUser != null) {
                 db.collection("examResults")
-                        .document(exam.getId())
-                        .collection("submissions")
-                        .document(currentUser.getUid())
+                        .document(exam.getId() + "_" + currentUser.getUid())
                         .get()
                         .addOnSuccessListener(document -> {
                             if (document.exists()) {
-                                List<Map<String, Object>> resultMaps = null;
-
-                                // Kiểm tra nếu "results" tồn tại và không null
-                                if (document.get("answers") instanceof List) {
-                                    resultMaps = (List<Map<String, Object>>) document.get("answers");
-                                }
-
+                                List<Map<String, Object>> resultMaps =
+                                        (List<Map<String, Object>>) document.get("results");
                                 String examName = document.getString("examName");
 
-                                if (resultMaps != null && !resultMaps.isEmpty()) {
-                                    ExamResultFragment resultFragment = new ExamResultFragment();
-                                    Bundle args = new Bundle();
-                                    args.putSerializable("answers", new ArrayList<>(resultMaps));
-                                    args.putString("examName", examName);
-                                    args.putBoolean("isViewOnly", true);
-                                    resultFragment.setArguments(args);
+                                ExamResultFragment resultFragment = new ExamResultFragment();
+                                Bundle args = new Bundle();
+                                args.putSerializable("results", new ArrayList<>(resultMaps));
+                                args.putString("examName", examName);
+                                args.putBoolean("isViewOnly", true);
+                                resultFragment.setArguments(args);
 
-                                    requireActivity().getSupportFragmentManager()
-                                            .beginTransaction()
-                                            .replace(R.id.frame_layout, resultFragment)
-                                            .addToBackStack(null)
-                                            .commit();
-                                } else {
-                                    Toast.makeText(
-                                            getContext(),
-                                            "Không có kết quả để hiển thị.",
-                                            Toast.LENGTH_SHORT
-                                    ).show();
-                                }
-                            } else {
-                                Toast.makeText(
-                                        getContext(),
-                                        "Không tìm thấy tài liệu kết quả.",
-                                        Toast.LENGTH_SHORT
-                                ).show();
+                                requireActivity().getSupportFragmentManager()
+                                        .beginTransaction()
+                                        .replace(R.id.frame_layout, resultFragment)
+                                        .addToBackStack(null)
+                                        .commit();
                             }
                         })
                         .addOnFailureListener(e ->
-                                Toast.makeText(
-                                        getContext(),
-                                        "Lỗi khi tải kết quả: " + e.getMessage(),
-                                        Toast.LENGTH_SHORT
-                                ).show());
+                                Toast.makeText(getContext(),
+                                        "Error loading results: " + e.getMessage(),
+                                        Toast.LENGTH_SHORT).show());
             }
         } else {
             ExamDetailFragment detailFragment = ExamDetailFragment.newInstance(
-                    exam.getId(),
                     exam.getClassName(),
                     exam.getName(),
                     exam.getDueDate(),
                     exam.getPdfUrl(),
-                    exam.getAnswerUrl()
+                    exam.getAnswerUrl(),
+                    40
             );
 
             requireActivity().getSupportFragmentManager()
@@ -279,4 +224,52 @@ public class StudentExamFragment extends Fragment implements StudentExamListAdap
         }
     }
 
+    private void showSavedResults(String examName, ArrayList<Answer> results) {
+        ExamResultFragment resultFragment = new ExamResultFragment();
+        Bundle args = new Bundle();
+        args.putSerializable("results", results);
+        args.putString("examName", examName);
+        args.putBoolean("isViewOnly", true);  // Thêm flag để đánh dấu chế độ xem lại
+        resultFragment.setArguments(args);
+
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.frame_layout, resultFragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    private void loadExamResult(String examId) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) return;
+
+        FirebaseFirestore.getInstance()
+                .collection("examResults")
+                .document(examId + "_" + currentUser.getUid())
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        List<Map<String, Object>> resultMaps =
+                                (List<Map<String, Object>>) documentSnapshot.get("results");
+
+                        // Chuyển đến ExamResultFragment với kết quả
+                        ExamResultFragment resultFragment = new ExamResultFragment();
+                        Bundle args = new Bundle();
+                        args.putSerializable("results", new ArrayList<>(resultMaps));
+                        args.putString("examName", documentSnapshot.getString("examName"));
+                        resultFragment.setArguments(args);
+
+                        getParentFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fragment_container, resultFragment)
+                                .addToBackStack(null)
+                                .commit();
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(getContext(),
+                                "Error loading exam result: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show()
+                );
+    }
 }
