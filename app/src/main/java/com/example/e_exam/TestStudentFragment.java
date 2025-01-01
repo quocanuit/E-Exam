@@ -45,8 +45,8 @@ public class TestStudentFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_test_student, container, false);
 
-        initializeViews(view);
         initializeFirebase();
+        initializeViews(view);
         getIntentData();
 
         return view;
@@ -54,11 +54,12 @@ public class TestStudentFragment extends Fragment {
 
     private void getIntentData() {
         if (getArguments() != null) {
-            // Lấy thông tin lớp học nếu được truyền từ Fragment trước
             className = getArguments().getString("CLASS_NAME");
-            if (className != null) {
-                // Nếu đã có classId từ arguments, load exams ngay
+            if (className != null && db != null) {  // Kiểm tra db đã được khởi tạo
+                Log.d("TestStudentFragment", "Loading exams for class: " + className);
                 loadExams(className);
+            } else {
+                Log.e("TestStudentFragment", "className or db is null");
             }
         }
     }
@@ -76,7 +77,9 @@ public class TestStudentFragment extends Fragment {
     }
 
     private void initializeFirebase() {
+        // Khởi tạo Firestore trước
         db = FirebaseFirestore.getInstance();
+
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
             DatabaseReference userRef = FirebaseDatabase.getInstance()
@@ -86,29 +89,38 @@ public class TestStudentFragment extends Fragment {
             userRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    String className = snapshot.child("className").getValue(String.class);
-                    // Sử dụng studentUid để query FireStore
-                    loadExams(className);
+                    String classNameFromDb = snapshot.child("className").getValue(String.class);
+                    // Chỉ load nếu chưa có className từ arguments
+                    if (className == null) {
+                        className = classNameFromDb;
+                        loadExams(className);
+                    }
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
-                    Log.e("StudentExamFragment", "Error getting custom UID", error.toException());
+                    Log.e("TestStudentFragment", "Error getting custom UID", error.toException());
                 }
             });
         }
     }
 
+
     private void loadExams(String className) {
+        // Kiểm tra null
+        if (db == null) {
+            Log.e("TestStudentFragment", "Firestore instance is null");
+            return;
+        }
+
         if (className == null || className.isEmpty()) {
             showError("Không có thông tin lớp học");
             return;
         }
 
-        // Query bài kiểm tra theo tên lớp
         Query examQuery = db.collection("exams")
-                .whereEqualTo("className", className)  // Đổi từ whereArrayContains sang whereEqualTo
-                .orderBy("deadline", Query.Direction.DESCENDING);  // Sắp xếp theo deadline
+                .whereEqualTo("className", className)
+                .orderBy("deadline", Query.Direction.DESCENDING);
 
         examListener = examQuery.addSnapshotListener((value, error) -> {
             swipeRefreshLayout.setRefreshing(false);

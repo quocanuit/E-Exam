@@ -1,6 +1,7 @@
 package com.example.e_exam;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,10 +27,14 @@ public class ClassStudentFragment extends Fragment {
         // Lấy tên lớp từ arguments
         Bundle arguments = getArguments();
         if (arguments != null) {
-            className = arguments.getString("className");
-            studentId = arguments.getString("StudentId");
+            className = arguments.getString("CLASS_NAME");
+            studentId = arguments.getString("studentId");
             testName = arguments.getString("testName");
+        }
+        if (className != null) {
             classNameTextView.setText(className);
+        } else {
+            Log.e("ClassStudentFragment", "className is null from arguments");
         }
 
         onClickListener();
@@ -64,7 +69,7 @@ public class ClassStudentFragment extends Fragment {
         // Gửi dữ liệu vào Fragment thông qua Bundle
         Bundle bundle = new Bundle();
         bundle.putString("CLASS_NAME", className);
-        bundle.putString("StudentId", studentId);
+        bundle.putString("studentId", studentId);
         fragment.setArguments(bundle);
 
         // Thêm Fragment vào Activity
@@ -80,8 +85,8 @@ public class ClassStudentFragment extends Fragment {
         // Gửi dữ liệu vào Fragment thông qua Bundle
         Bundle bundle = new Bundle();
         bundle.putString("CLASS_NAME", className);
-        bundle.putString("StudentId", studentId);
-        bundle.putString("TEST_NAME", testName);
+        bundle.putString("studentId", studentId);
+        bundle.putString("testName", testName);
         fragment.setArguments(bundle);
 
         // Thêm Fragment vào Activity
