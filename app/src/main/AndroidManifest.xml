@@ -22,9 +22,6 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <service
-            android:name="com.google.firebase.messaging.FirebaseMessagingService"
-            android:exported="false" />
 
         <activity
             android:name=".ListScoreStudentActivity"
@@ -51,7 +48,16 @@
             android:name=".ExamStart"
             android:exported="false" />
         <activity
+            android:name=".RegisterActivity"
+            android:exported="false" />
+        <activity
             android:name=".StudentGradeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ClassStudent"
+            android:exported="false" />
+        <activity
+            android:name=".AddExam"
             android:exported="false" />
         <activity
             android:name=".AdminActivityClass"
@@ -59,11 +65,12 @@
         <activity
             android:name=".ForgetPass"
             android:exported="false" />
+        <service
+            android:name="com.google.firebase.messaging.FirebaseMessagingService"
+            android:exported="false" />
         <activity
             android:name=".ListStudentActivity"
             android:exported="false" />
-        <activity android:name=".RegisterActivity"
-            android:exported="false"/>
         <activity
             android:name=".MainActivity"
             android:exported="true">

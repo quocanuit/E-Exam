@@ -3,18 +3,16 @@ package com.example.e_exam;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.database.DataSnapshot;
@@ -37,7 +35,7 @@ public class ClassAdapterStudent extends RecyclerView.Adapter<ClassAdapterStuden
     private final Context context;
     private final OnClassJoinListener listener;
     private final String studentId;
-    private  DatabaseReference databaseRef;
+    private final DatabaseReference databaseRef;
 
 
     public interface OnClassJoinListener {
@@ -49,6 +47,7 @@ public class ClassAdapterStudent extends RecyclerView.Adapter<ClassAdapterStuden
         this.context = context;
         this.listener = listener;
         this.studentId = studentId;
+
         this.databaseRef = FirebaseDatabase.getInstance().getReference(CLASSES_PATH);
     }
 
@@ -114,18 +113,11 @@ public class ClassAdapterStudent extends RecyclerView.Adapter<ClassAdapterStuden
     }
 
     private void navigateToClassStudent(String className) {
-        ClassStudentFragment fragment = new ClassStudentFragment();
-
-        Bundle bundle = new Bundle();
-        bundle.putString("className", className);
-        bundle.putString("StudentId", studentId);
-        fragment.setArguments(bundle);
-
-        AppCompatActivity activity = (AppCompatActivity) context;
-        activity.getSupportFragmentManager().beginTransaction()
-                .replace(R.id.frame_layout, fragment)  // Đảm bảo rằng container có id là frame_layout
-                .addToBackStack(null)  // Thêm vào back stack nếu muốn quay lại Fragment trước đó
-                .commit();
+        Intent intent = new Intent(context, ClassStudent.class);
+        intent.putExtra("className", className);
+        intent.putExtra("StudentId", studentId);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // Thêm flag này nếu context không phải Activity
+        context.startActivity(intent);
     }
 
     private void showJoinClassDialog(String className) {

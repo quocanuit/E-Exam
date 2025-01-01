@@ -39,8 +39,6 @@ public class StudentActivity extends AppCompatActivity {
                 replaceFragment(new StudentClassFragment(studentID));
             } else if (itemId == R.id.exam) {
                 replaceFragment(new StudentExamFragment());
-            } else if (itemId == R.id.score) {
-                replaceFragment(new StudentScoreFragment());
             } else if (itemId == R.id.user) {
                 replaceFragment(new UserFragment());
             }
