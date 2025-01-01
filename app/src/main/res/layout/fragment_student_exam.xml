@@ -15,7 +15,8 @@
         android:layout_margin="@dimen/activity_vertical_margin">
 
         <com.google.android.material.button.MaterialButton
-            android:layout_width="132dp"
+            android:id="@+id/btnAllExam"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/fte_all_exam"
             android:gravity="center_vertical"
@@ -23,27 +24,44 @@
             android:layout_weight="1"/>
 
         <com.google.android.material.button.MaterialButton
-            android:layout_width="132dp"
+            android:id="@+id/btnDoneExam"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Đã làm"
+            android:gravity="center_vertical"
+            android:textSize="12sp"
+            android:layout_weight="1"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPendingExam"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/fte_pending_exam"
             android:gravity="center_vertical"
             android:textSize="12sp"
             android:textColor="@color/primary"
             android:backgroundTint="@color/primary_fixed"
-            android:layout_marginStart="@dimen/margin_basex2"
             android:layout_weight="1"/>
 
     </LinearLayout>
 
     <!-- RecyclerView Section -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:paddingLeft="@dimen/margin_base"
-        android:paddingRight="@dimen/margin_base"
-        android:layout_marginHorizontal="@dimen/activity_vertical_margin"
-        android:layout_marginTop="@dimen/margin_basex2"/>
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:paddingLeft="@dimen/margin_base"
+            android:paddingRight="@dimen/margin_base"
+            android:layout_marginHorizontal="@dimen/activity_vertical_margin"
+            android:layout_marginTop="@dimen/margin_basex2"/>
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
 
 </LinearLayout>
