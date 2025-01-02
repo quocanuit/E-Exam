@@ -179,16 +179,59 @@ public class StudentExamFragment extends Fragment implements StudentExamListAdap
     private void checkExamCompletion(StudentExamList exam) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
-            db.collection("examResults")
+            // Kiểm tra trạng thái làm bài trong collection userStatus
+            db.collection("exams")
                     .document(exam.getId())
-                    .collection("submissions")
+                    .collection("userStatus")
                     .document(currentUser.getUid())
                     .get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            exam.setStatus("completed");
+                    .addOnSuccessListener(userStatusDoc -> {
+                        if (userStatusDoc.exists() && "completed".equals(userStatusDoc.getString("status"))) {
+                            // Nếu đã hoàn thành, kiểm tra xem có kết quả không
+                            db.collection("examResults")
+                                    .document(exam.getId())
+                                    .collection("submissions")
+                                    .document(currentUser.getUid())
+                                    .get()
+                                    .addOnSuccessListener(resultDoc -> {
+                                        if (resultDoc.exists()) {
+                                            // Cả trạng thái và kết quả đều tồn tại
+                                            exam.setStatus("completed");
+                                            // Lấy điểm số nếu có
+                                            Long score = resultDoc.getLong("score");
+                                            if (score != null) {
+                                                exam.setScore(score.intValue());
+                                            }
+                                            // Lấy thời gian nộp bài
+                                            Long submittedAt = resultDoc.getLong("submittedAt");
+                                            if (submittedAt != null) {
+                                                exam.setSubmittedAt(submittedAt);
+                                            }
+                                        } else {
+                                            // Trạng thái hoàn thành nhưng không có kết quả
+                                            exam.setStatus("error");
+                                        }
+                                        adapter.notifyDataSetChanged();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.e("ExamStatus", "Error checking exam results", e);
+                                        exam.setStatus("pending");
+                                        adapter.notifyDataSetChanged();
+                                    });
+                        } else {
+                            // Chưa làm bài
+                            if (exam.getDueDate() < System.currentTimeMillis()) {
+                                exam.setStatus("expired");
+                            } else {
+                                exam.setStatus("pending");
+                            }
                             adapter.notifyDataSetChanged();
                         }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("ExamStatus", "Error checking user status", e);
+                        exam.setStatus("error");
+                        adapter.notifyDataSetChanged();
                     });
         }
     }
@@ -232,32 +275,25 @@ public class StudentExamFragment extends Fragment implements StudentExamListAdap
                             Log.d("ExamResult", "Document data: " + data);
 
                             @SuppressWarnings("unchecked")
-                            Map<String, Object> answersMap = (Map<String, Object>) document.get("answers");
+                            ArrayList<Map<String, Object>> answersList = (ArrayList<Map<String, Object>>) document.get("answers");
 
-                            if (answersMap != null && !answersMap.isEmpty()) {
-                                Log.d("ExamResult", "Found " + answersMap.size() + " answers");
+                            if (answersList != null && !answersList.isEmpty()) {
+                                Log.d("ExamResult", "Found " + answersList.size() + " answers");
 
-                                // Convert to TreeMap with natural number sorting
-                                TreeMap<String, Object> sortedAnswers = new TreeMap<>((s1, s2) -> {
-                                    // Extract numbers from strings (e.g., "question1" -> 1)
-                                    String num1Str = s1.replaceAll("\\D+", "");
-                                    String num2Str = s2.replaceAll("\\D+", "");
-                                    int num1 = Integer.parseInt(num1Str);
-                                    int num2 = Integer.parseInt(num2Str);
-
-                                    // Compare by number of digits first
-                                    if (num1Str.length() != num2Str.length()) {
-                                        return num1Str.length() - num2Str.length();
-                                    }
-
-                                    // If same number of digits, compare by value
-                                    return num1 - num2;
-                                });
-                                sortedAnswers.putAll(answersMap);
+                                // Convert answers to the format expected by ExamResultFragment
+                                Map<String, Object> resultData = new HashMap<>();
+                                for (Map<String, Object> answer : answersList) {
+                                    String questionId = String.valueOf(answer.get("questionId"));
+                                    Map<String, Object> questionData = new HashMap<>();
+                                    questionData.put("questionId", questionId);
+                                    questionData.put("selected", answer.get("selected"));
+                                    questionData.put("correct", answer.get("correct"));
+                                    resultData.put("question_" + questionId, questionData);
+                                }
 
                                 ExamResultFragment resultFragment = new ExamResultFragment();
                                 Bundle args = new Bundle();
-                                args.putSerializable("resultData", new HashMap<>(sortedAnswers));
+                                args.putSerializable("resultData", new HashMap<>(resultData));
                                 args.putString("examName", exam.getName());
                                 args.putString("examId", exam.getId());
                                 resultFragment.setArguments(args);

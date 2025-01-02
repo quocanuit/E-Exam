@@ -12,10 +12,38 @@
         android:layout_height="wrap_content" >
 
         <TextView
-            android:id="@+id/tv_topic"
+            android:id="@+id/tv_class"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="Topic"
+            android:text="Lớp"
+            android:textStyle="bold"
+            android:textAlignment="center" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/tv_examName"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Bài kiểm tra"
+            android:textStyle="bold"
+            android:textAlignment="center" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/tv_score"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Điểm"
             android:textStyle="bold"
             android:textAlignment="center" />
 

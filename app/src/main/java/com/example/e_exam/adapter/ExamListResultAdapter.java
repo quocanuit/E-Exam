@@ -13,8 +13,8 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class ExamListResultAdapter extends BaseAdapter {
-    private Context context;
-    private ArrayList<Map<String, Object>> questions;
+    private final Context context;
+    private final ArrayList<Map<String, Object>> questions;
 
     public ExamListResultAdapter(Context context, ArrayList<Map<String, Object>> questions) {
         this.context = context;
@@ -53,27 +53,40 @@ public class ExamListResultAdapter extends BaseAdapter {
 
         Map<String, Object> question = questions.get(position);
 
+        // Lấy dữ liệu câu hỏi
         String questionId = (String) question.get("questionId");
         String selected = (String) question.get("selected");
         String correct = (String) question.get("correct");
 
-        holder.tvQuestion.setText("Question " + questionId);
-        holder.tvSelected.setText(selected != null ? selected : "X");
+        // Cập nhật UI
+        holder.tvQuestion.setText("Câu " + questionId);
+
+        // Hiển thị đáp án đã chọn
+        if (selected != null && !selected.isEmpty()) {
+            holder.tvSelected.setText(selected);
+        } else {
+            holder.tvSelected.setText("X");
+        }
+
+        // Hiển thị đáp án đúng
         holder.tvCorrectAnswer.setText(correct);
 
-        // Set color for correct answer
-        holder.tvCorrectAnswer.setTextColor(Color.parseColor("#4CAF50")); // Green
-
-        // Set color for selected answer
-        if (selected != null) {
+        // Set màu sắc cho đáp án
+        if (selected != null && !selected.isEmpty()) {
             if (selected.equals(correct)) {
-                holder.tvSelected.setTextColor(Color.parseColor("#4CAF50")); // Green
+                // Đáp án đúng - màu xanh
+                holder.tvSelected.setTextColor(Color.parseColor("#4CAF50"));
             } else {
-                holder.tvSelected.setTextColor(Color.parseColor("#F44336")); // Red
+                // Đáp án sai - màu đỏ
+                holder.tvSelected.setTextColor(Color.parseColor("#F44336"));
             }
         } else {
-            holder.tvSelected.setTextColor(Color.parseColor("#F44336")); // Red for no answer
+            // Không chọn đáp án - màu đỏ
+            holder.tvSelected.setTextColor(Color.parseColor("#F44336"));
         }
+
+        // Đáp án đúng luôn màu xanh
+        holder.tvCorrectAnswer.setTextColor(Color.parseColor("#4CAF50"));
 
         return convertView;
     }
