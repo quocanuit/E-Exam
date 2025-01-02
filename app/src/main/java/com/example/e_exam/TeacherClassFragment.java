@@ -23,7 +23,7 @@ public class TeacherClassFragment extends Fragment {
 
     private String teacherId; // Lưu teacherId từ TeacherActivity
     private RecyclerView recyclerView;
-    private ClassAdapter classAdapter;
+    private ClassAdapter2 classAdapter;
     private ArrayList<String> classList;
     private DatabaseReference databaseReference;
 
@@ -82,7 +82,7 @@ public class TeacherClassFragment extends Fragment {
 
                 // Update RecyclerView with class data
                 if (classAdapter == null) {
-                    classAdapter = new ClassAdapter(classList);
+                    classAdapter = new ClassAdapter2 (classList);
                     recyclerView.setAdapter(classAdapter);
                 } else {
                     classAdapter.notifyDataSetChanged(); // Notify the adapter of data changes

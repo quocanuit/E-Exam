@@ -1,36 +1,25 @@
+<!-- res/layout/dialog_create_class.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:padding="16dp">
 
     <EditText
         android:id="@+id/edit_class_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Tên lớp học"
-        android:padding="8dp"
-        android:layout_marginBottom="10dp" />
+        android:hint="Tên lớp học" />
 
-    <EditText
-        android:id="@+id/edit_teacher_name"
+    <Spinner
+        android:id="@+id/spinner_teacher_id"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Tên giảng viên"
-        android:padding="8dp"
-        android:layout_marginBottom="10dp" />
-    <EditText
-        android:id="@+id/edit_teacher_id"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Mã giảng viên"
-        android:padding="8dp"
-        android:layout_marginBottom="10dp" />
+        android:layout_marginTop="16dp" />
+
     <Button
         android:id="@+id/btn_create"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tạo lớp học"
-        android:layout_gravity="center_horizontal"
-        android:padding="8dp" />
+        android:text="Tạo" />
 </LinearLayout>

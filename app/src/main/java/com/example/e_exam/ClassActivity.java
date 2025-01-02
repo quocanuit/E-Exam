@@ -33,13 +33,13 @@ public class ClassActivity extends AppCompatActivity {
     }
 
     private void openListStudentActivity() {
-        Intent intent = new Intent(ClassActivity.this, ListStudentActivity.class);
+        Intent intent = new Intent(ClassActivity.this, ListStudent2.class);
         intent.putExtra("CLASS_NAME", className);
         startActivity(intent);
     }
 
     private void openListScoreStudentActivity() {
-        Intent intent = new Intent(ClassActivity.this, ListScoreStudentActivity.class);
+        Intent intent = new Intent(ClassActivity.this, ListAssignment.class);
         intent.putExtra("CLASS_NAME", className);
         startActivity(intent);
     }
