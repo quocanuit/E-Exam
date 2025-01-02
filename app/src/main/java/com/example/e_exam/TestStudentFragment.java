@@ -241,7 +241,6 @@ public class TestStudentFragment extends Fragment {
         } else {
             errorMessage = "Lỗi: " + error.getMessage();
         }
-        showError(errorMessage);
     }
 
     private void showError(String message) {
