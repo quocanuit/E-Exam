@@ -39,22 +39,22 @@ public class ListStudentActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_student);
 
-        // Nhận tên lớp từ Intent
+
         className = getIntent().getStringExtra("CLASS_NAME");
 
-        // Ánh xạ các view
+
         NameClass = findViewById(R.id.tvClassName);
         teacherNameView = findViewById(R.id.tvTeacherName);
         tableLayoutStudents = findViewById(R.id.tableLayoutStudents);
 
-        // Cập nhật tên lớp vào TextView
+
         if (className != null) {
             NameClass.setText("Lớp: " + className);
 
-            // Initialize database reference
+
             databaseReference = FirebaseDatabase.getInstance().getReference("Classes").child(className);
 
-            // Load class info and students
+
             loadClassInfo();
             loadStudents();
         }
@@ -74,12 +74,12 @@ public class ListStudentActivity extends AppCompatActivity {
         List<UserModel> studentList = new ArrayList<>();
         StudentSelectionAdapter adapter = new StudentSelectionAdapter(studentList);
 
-        // Create the dialog first
+
         AlertDialog dialog = builder.setView(dialogView)
                 .setNegativeButton("Hủy", null)
                 .create();
 
-        // Then use it in the listener
+
         adapter.setOnStudentSelectedListener(student -> {
             addStudentToClass(student);
             dialog.dismiss();
@@ -87,7 +87,7 @@ public class ListStudentActivity extends AppCompatActivity {
 
         recyclerView.setAdapter(adapter);
 
-        // Load students from Firebase
+
         DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
         usersRef.orderByChild("role").equalTo("Student")
                 .addListenerForSingleValueEvent(new ValueEventListener() {
@@ -153,7 +153,7 @@ public class ListStudentActivity extends AppCompatActivity {
         studentsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-                // Xóa tất cả các hàng cũ trừ hàng tiêu đề
+
                 int childCount = tableLayoutStudents.getChildCount();
                 if (childCount > 1) {
                     tableLayoutStudents.removeViews(1, childCount - 1);
@@ -161,7 +161,7 @@ public class ListStudentActivity extends AppCompatActivity {
 
                 studentsList.clear();
 
-                // Lặp qua danh sách sinh viên và thêm vào TableLayout
+
                 int index = 1;
                 for (DataSnapshot studentSnapshot : snapshot.getChildren()) {
                     String studentKey = studentSnapshot.getKey();
@@ -170,7 +170,7 @@ public class ListStudentActivity extends AppCompatActivity {
                     if (studentName != null) {
                         studentsList.add(studentName);
 
-                        // Tạo một hàng mới cho mỗi sinh viên
+
                         TableRow tableRow = createStudentRow(index, studentName, studentKey);
                         tableLayoutStudents.addView(tableRow);
                         index++;

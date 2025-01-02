@@ -38,38 +38,38 @@ public class FragmentAdminClass extends Fragment {
         // Inflate layout
         View view = inflater.inflate(R.layout.fragment_admin_class, container, false);
 
-        // Khởi tạo Firebase Realtime Database
+
         databaseReference = FirebaseDatabase.getInstance().getReference("Classes");
 
-        // Khởi tạo danh sách lớp học
+
         classList = new ArrayList<>();
 
-        // Khởi tạo RecyclerView và ánh xạ đúng ID từ layout
+
         recyclerView = view.findViewById(R.id.recyclerView_classes);
         if (recyclerView == null) {
             Log.e("FragmentAdminClass", "RecyclerView is null!");
         } else {
-            // Thiết lập LayoutManager cho RecyclerView
+
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         }
 
-        // Khởi tạo Adapter và gắn nó vào RecyclerView
+
         classAdapter = new ClassAdapter(classList);
         if (recyclerView != null) {
             recyclerView.setAdapter(classAdapter);
         }
 
-        // Xử lý sự kiện nhấn nút "Tạo lớp học"
+
         createClassButton = view.findViewById(R.id.btn_create_class);
         createClassButton.setOnClickListener(v -> showCreateClassDialog());
 
-        // Xử lý sự kiện nhấn giữ lâu vào item lớp học
+
         classAdapter.setOnItemLongClickListener(this::showDeleteClassDialog);
 
-        // Tải dữ liệu lớp học từ Firebase
+
         loadClasses();
 
-        return view; // Trả về view đã được inflate
+        return view;
     }
 
     private void showCreateClassDialog() {
@@ -83,7 +83,7 @@ public class FragmentAdminClass extends Fragment {
         builder.setView(dialogView);
         AlertDialog dialog = builder.create();
 
-        // Load teacher IDs and names from Firebase
+
         DatabaseReference usersReference = FirebaseDatabase.getInstance().getReference("users");
         ArrayList<String> teacherList = new ArrayList<>();
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, teacherList);
@@ -119,10 +119,10 @@ public class FragmentAdminClass extends Fragment {
             String teacherID = teacherInfo != null ? teacherInfo.split(" - ")[0] : "";
             String teacherName = teacherInfo != null ? teacherInfo.split(" - ")[1] : "";
             if (!className.isEmpty() && !teacherID.isEmpty()) {
-                // Create a HashMap to store class data
+
                 Class newClass = new Class(className, teacherID, teacherName);
 
-                // Store the class directly under its name instead of using push()
+
                 databaseReference.child(className).setValue(newClass)
                         .addOnSuccessListener(aVoid -> {
                             Log.d("Firebase", "Dữ liệu được đẩy lên thành công");
@@ -138,8 +138,6 @@ public class FragmentAdminClass extends Fragment {
                 }
 
                 if (teacherID.isEmpty()) {
-                    // Handle empty teacher ID
-                    // You can show an error message or set a default value
                 }
             }
         });
@@ -172,13 +170,13 @@ public class FragmentAdminClass extends Fragment {
     }
 
     private void showDeleteClassDialog(String className) {
-        // Hiển thị hộp thoại xác nhận xóa lớp học
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Xóa Lớp Học");
         builder.setMessage("Bạn có chắc chắn muốn xóa lớp học " + className + " không?");
 
         builder.setPositiveButton("Xóa", (dialog, which) -> {
-            // Tìm và xóa lớp học khỏi Firebase Realtime Database
+
             databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

@@ -47,7 +47,7 @@ public class ListStudent2 extends AppCompatActivity {
         teacherNameView = findViewById(R.id.tvTeacherName);
         tableLayoutStudents = findViewById(R.id.tableLayoutStudents);
 
-        // Cập nhật tên lớp vào TextView
+
         if (className != null) {
             NameClass.setText("Lớp: " + className);
 
@@ -86,7 +86,7 @@ public class ListStudent2 extends AppCompatActivity {
 
         recyclerView.setAdapter(adapter);
 
-        // Load students from Firebase
+
         DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
         usersRef.orderByChild("role").equalTo("Student")
                 .addListenerForSingleValueEvent(new ValueEventListener() {

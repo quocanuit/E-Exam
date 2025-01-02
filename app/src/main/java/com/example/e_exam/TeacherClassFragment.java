@@ -54,7 +54,7 @@ public class TeacherClassFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_teacher_class, container, false);
 
-        recyclerView = rootView.findViewById(R.id.recyclerViewClasses); // Đảm bảo rằng ID này có trong layout
+        recyclerView = rootView.findViewById(R.id.recyclerViewClasses);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         classList = new ArrayList<>();
@@ -62,7 +62,7 @@ public class TeacherClassFragment extends Fragment {
 
 
 
-        // Truy vấn các lớp học mà giáo viên dạy
+
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -80,12 +80,12 @@ public class TeacherClassFragment extends Fragment {
                     }
                 }
 
-                // Update RecyclerView with class data
+
                 if (classAdapter == null) {
                     classAdapter = new ClassAdapter2 (classList);
                     recyclerView.setAdapter(classAdapter);
                 } else {
-                    classAdapter.notifyDataSetChanged(); // Notify the adapter of data changes
+                    classAdapter.notifyDataSetChanged();
                 }
             }
 

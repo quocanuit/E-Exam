@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:background="#F5F5F5">
 
-    <!-- Header Card -->
+
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -20,7 +20,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Class Name -->
+
             <TextView
                 android:id="@+id/tvClassName"
                 android:layout_width="match_parent"
@@ -30,7 +30,7 @@
                 android:textStyle="bold"
                 android:textColor="#512DA8"/>
 
-            <!-- Teacher Info Section -->
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -58,7 +58,7 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- Students List Card -->
+
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -74,7 +74,7 @@
             android:stretchColumns="1"
             android:padding="16dp">
 
-            <!-- Header Row -->
+
             <TableRow
                 android:background="#E3F2FD"
                 android:padding="8dp">

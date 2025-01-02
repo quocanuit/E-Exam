@@ -237,7 +237,7 @@ public class ExamCreateFragment extends Fragment {
                     }
                 }
 
-                // After retrieving data, update the Spinner's Adapter
+
                 ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, classList);
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 classPicker.setAdapter(adapter);

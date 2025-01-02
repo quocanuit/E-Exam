@@ -34,68 +34,67 @@ public class ListScoreStudentActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_score_student);
 
-        // Nhận tên lớp từ Intent
+
         String className = getIntent().getStringExtra("CLASS_NAME");
         String examName = getIntent().getStringExtra("ASSIGNMENT_NAME");
-        // Hiển thị tên lớp
+
         classNameTextView = findViewById(R.id.class_name_text_view);
         classNameTextView.setText(className);
 
-        // Thiết lập RecyclerView
+
         recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         studentList = new ArrayList<>();
 
 
-        // Tạo bảng điểm bằng TableLayout
+
         tableLayout = findViewById(R.id.table_layout);
         addMainTitle();
-        // Thêm hàng tiêu đề vào bảng
+
         addTableHeader();
 
-        // Kết nối đến Firebase và đọc dữ liệu
+
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("AverageScores").child(className);
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 studentList.clear();
-                tableLayout.removeAllViews(); // Xóa tất cả các hàng trong bảng trước khi thêm mới
-                addTableHeader(); // Thêm lại hàng tiêu đề
+                tableLayout.removeAllViews();
+                addTableHeader();
 
-                // Duyệt qua các học sinh trong lớp khớp với className
+
                 for (DataSnapshot studentSnapshot : dataSnapshot.getChildren()) {
-                    String studentId = studentSnapshot.getKey();  // Lấy ID học sinh
+                    String studentId = studentSnapshot.getKey();
                     Log.d("StudentId", "Student ID: " + studentId); // In ID học sinh
 
-                    // Lấy điểm trung bình từ các môn học của học sinh
+
                     for (DataSnapshot subjectSnapshot : studentSnapshot.getChildren()) {
                         String subjectName = subjectSnapshot.getKey();
                         if (examName.equals(subjectName) && subjectSnapshot.hasChild("ScoreAverage")) {
-                            String subjectName2 = subjectSnapshot.getKey();  // Lấy tên môn học
+                            String subjectName2 = subjectSnapshot.getKey();
                             Double scoreAverage = subjectSnapshot.child("ScoreAverage").getValue(Double.class);  // Lấy điểm trung bình
 
-                            // Kiểm tra nếu scoreAverage là null, gán mặc định là 0.0
+
                             double score = (scoreAverage != null) ? scoreAverage : 0.0;
 
-                            // In ra log để kiểm tra dữ liệu
+
                             Log.d("SubjectData", "Subject: " + subjectName + ", ScoreAverage: " + scoreAverage);
 
-                            // Tạo đối tượng Student2 với Mã học sinh, Môn học và Điểm trung bình
+
                             Student2 student = new Student2(studentId, subjectName2, score);
                             studentList.add(student);
 
-                            // Thêm hàng vào bảng
+
                             addTableRow(studentId, subjectName2, score);
 
-                            // Hiển thị thông tin dưới dạng Toast
+
                             String toastMessage = "Student ID: " + studentId + "\nSubject: " + subjectName2 + "\nScore: " + score;
                             Toast.makeText(ListScoreStudentActivity.this, toastMessage, Toast.LENGTH_LONG).show();
                         }
                     }
                 }
 
-                // Cập nhật lại giao diện RecyclerView
-              //  studentAdapter2.notifyDataSetChanged();
+            
             }
 
             @Override
