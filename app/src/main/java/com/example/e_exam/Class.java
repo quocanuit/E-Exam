@@ -10,7 +10,7 @@ public class Class {
     }
 
     // Constructor với tham số để khởi tạo tên và mã lớp học
-    public Class(String className, String teacherName, String teacherid) {
+    public Class(String className,String teacherid, String teacherName) {
         this.className = className;
         this.teacherName = teacherName;
         this.teacherID= teacherid;

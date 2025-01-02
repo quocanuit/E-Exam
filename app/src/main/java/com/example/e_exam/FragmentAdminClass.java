@@ -6,8 +6,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -74,21 +77,50 @@ public class FragmentAdminClass extends Fragment {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_create_class, null);
 
         EditText editClassName = dialogView.findViewById(R.id.edit_class_name);
-        EditText editTeacherName = dialogView.findViewById(R.id.edit_teacher_name);
-        EditText editTeacherId = dialogView.findViewById(R.id.edit_teacher_id);
+        Spinner spinnerTeacherId = dialogView.findViewById(R.id.spinner_teacher_id);
         Button btnCreate = dialogView.findViewById(R.id.btn_create);
 
         builder.setView(dialogView);
         AlertDialog dialog = builder.create();
 
+        // Load teacher IDs and names from Firebase
+        DatabaseReference usersReference = FirebaseDatabase.getInstance().getReference("users");
+        ArrayList<String> teacherList = new ArrayList<>();
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, teacherList);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerTeacherId.setAdapter(adapter);
+
+        usersReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                teacherList.clear();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    String role = snapshot.child("role").getValue(String.class);
+                    if ("Teacher".equals(role)) {
+                        String uid = snapshot.child("uid").getValue(String.class);
+                        String fullName = snapshot.child("fullName").getValue(String.class);
+                        if (uid != null && fullName != null) {
+                            teacherList.add(uid + " - " + fullName);
+                        }
+                    }
+                }
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("Firebase", "Lỗi khi lấy dữ liệu: " + databaseError.getMessage());
+            }
+        });
+
         btnCreate.setOnClickListener(v -> {
             String className = editClassName.getText().toString().trim();
-            String teacherName = editTeacherName.getText().toString().trim();
-            String teacherID = editTeacherId.getText().toString().trim();
-
-            if (!className.isEmpty() && !teacherName.isEmpty() && !teacherID.isEmpty()) {
+            String teacherInfo = (String) spinnerTeacherId.getSelectedItem();
+            String teacherID = teacherInfo != null ? teacherInfo.split(" - ")[0] : "";
+            String teacherName = teacherInfo != null ? teacherInfo.split(" - ")[1] : "";
+            if (!className.isEmpty() && !teacherID.isEmpty()) {
                 // Create a HashMap to store class data
-                Class newClass = new Class(className, teacherName, teacherID);
+                Class newClass = new Class(className, teacherID, teacherName);
 
                 // Store the class directly under its name instead of using push()
                 databaseReference.child(className).setValue(newClass)
@@ -104,11 +136,10 @@ public class FragmentAdminClass extends Fragment {
                 if (className.isEmpty()) {
                     editClassName.setError("Tên lớp không được để trống!");
                 }
-                if (teacherName.isEmpty()) {
-                    editTeacherName.setError("Tên giảng viên không được để trống!");
-                }
+
                 if (teacherID.isEmpty()) {
-                    editTeacherId.setError("Mã giảng viên không được để trống!");
+                    // Handle empty teacher ID
+                    // You can show an error message or set a default value
                 }
             }
         });
@@ -164,27 +195,21 @@ public class FragmentAdminClass extends Fragment {
                         // 2. Kiểm tra nhánh có tên trùng với className (tên nhánh cấp 1 dưới "Classes")
                         String key = snapshot.getKey();
                         if (key != null && key.equals(className)) {
-                            // Xóa nhánh có tên nhánh trùng với className
+                            // Xóa nhánh con có tên trùng với className
                             snapshot.getRef().removeValue();
-
-                            // 3. Xóa các nhánh con trực tiếp dưới nhánh có tên className
-                            DataSnapshot studentsSnapshot = snapshot.child("students");
-                            for (DataSnapshot studentSnapshot : studentsSnapshot.getChildren()) {
-                                // Xóa từng sinh viên con dưới "students"
-                                studentSnapshot.getRef().removeValue();
-                            }
                         }
                     }
+
+                    classList.remove(className); // Xóa lớp học khỏi danh sách lớp học
+                    classAdapter.notifyDataSetChanged(); // Cập nhật RecyclerView
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-                    // Xử lý lỗi nếu có sự cố khi xóa dữ liệu
-                    Log.e("Firebase", "Lỗi khi xóa dữ liệu: " + databaseError.getMessage());
+                    Log.e("Firebase", "Lỗi khi lấy dữ liệu: " + databaseError.getMessage());
                 }
             });
         });
-
 
         builder.setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());
 

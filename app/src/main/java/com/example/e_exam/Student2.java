@@ -1,38 +1,25 @@
 package com.example.e_exam;
 
 public class Student2 {
-
     private String studentId;
     private String subjectName;
-    private double score;
+    private double scoreAverage;
 
-    public Student2(String studentId, String subjectName, double score) {
+    public Student2(String studentId, String subjectName, double scoreAverage) {
         this.studentId = studentId;
         this.subjectName = subjectName;
-        this.score = score;
+        this.scoreAverage = scoreAverage;
     }
 
     public String getStudentId() {
         return studentId;
     }
 
-    public void setStudentId(String studentId) {
-        this.studentId = studentId;
-    }
-
-    public String getSubject() {
+    public String getSubjectName() {
         return subjectName;
     }
 
-    public void setSubject(String subjectName) {
-        this.subjectName = subjectName;
-    }
-
-    public double getScore() {
-        return score;
-    }
-
-    public void setScore(double score) {
-        this.score = score;
+    public double getScoreAverage() {
+        return scoreAverage;
     }
 }

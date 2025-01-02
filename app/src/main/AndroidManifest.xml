@@ -27,6 +27,12 @@
             android:name=".ListScoreStudentActivity"
             android:exported="false" />
         <activity
+            android:name=".ListAssignment"
+            android:exported="false" />
+        <activity
+            android:name=".ListStudent2"
+            android:exported="false" />
+        <activity
             android:name=".ScoreStudent"
             android:exported="false" />
         <activity

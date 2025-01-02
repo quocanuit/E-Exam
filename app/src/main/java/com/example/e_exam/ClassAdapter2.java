@@ -20,14 +20,14 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
-public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHolder> {
+public class ClassAdapter2 extends RecyclerView.Adapter<ClassAdapter2.ClassViewHolder> {
 
     private ArrayList<String> classList;
     private int selectedPosition = RecyclerView.NO_POSITION;
     private OnItemLongClickListener longClickListener;
     private DatabaseReference databaseRef;
 
-    public ClassAdapter(ArrayList<String> classList) {
+    public ClassAdapter2 (ArrayList<String> classList) {
         this.classList = classList;
         this.databaseRef = FirebaseDatabase.getInstance().getReference("Classes");
     }
@@ -73,7 +73,7 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
             notifyDataSetChanged();
 
             // Navigate to ListStudentActivity
-            Intent intent = new Intent(holder.itemView.getContext(), ListStudentActivity.class);
+            Intent intent = new Intent(holder.itemView.getContext(), ClassActivity.class);
             intent.putExtra("CLASS_NAME", className);
             holder.itemView.getContext().startActivity(intent);
         });
