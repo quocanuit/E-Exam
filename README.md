@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # E-Exam
 
 E-Exam is an Android application designed to facilitate online examinations. It was developed as a final project for the Mobile Application Development course at UIT (NT118).
@@ -16,3 +17,6 @@ E-Exam is an Android application designed to facilitate online examinations. It 
 - **Firestore Database**: Stores exam data, user information, and class details.
 - **Realtime Database**: Used for real-time updates and data synchronization.
 - **Storage**: Stores exam-related files such as PDFs and Excel sheets.
+=======
+# Mobile-app
+>>>>>>> mobile-app-merge
